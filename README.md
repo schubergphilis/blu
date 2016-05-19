@@ -1,5 +1,11 @@
-Getting Started
----------------
+<p align="center">
+  <img src="your_relative_path_here"/>
+</p>
+
+![alt tag](Common\logo\blu.png)
+
+Blu Powershell service
+----------------------
 
 The quickes way to get started with Blu PowerShell service is to get a copy of BluService.exe and BluShell.exe and save it into C:\\Blu folder.
 Then register the Windows service by::
