@@ -4,7 +4,9 @@
 
 Blu Powershell Service
 ----------------------
+[Refference page on ReadTheDocs](http://backslashblu.readthedocs.io/)
 
+# Getting started
 The quickes way to get started with Blu PowerShell service is to get a copy of BluService.exe and BluShell.exe and save it into C:\\Blu folder.
 Then register the Windows service by::
 
@@ -44,9 +46,6 @@ Transpiler:
 <p align="center">
     <img src="Docs\source\transpiler.png"/>
 </p>
-
-
-
 
 
 To know more about many other futures of Blu toolkit, please continue reading: [Blu Documentation](http://backslashblu.readthedocs.io/)
