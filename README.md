@@ -33,7 +33,7 @@ To illustrate how BluService changes this behaviour, start a command prompt agai
     
 As you can see, the variable $a still returns a valid list of all available commands.   
 This new PowerShell behavior is extreamly useful for PowerShell automation and specially in Chef cookbooks.  
-It happens becuase Blu PowerShell service does not dispose the vaiables in current the scope unless you dispose them manually.  
+**Blu PowerShell service does not dispose the vaiables in the current scope unless you dispose them manually.**  
 You can also look at Windows event viewer for event id 271, source BluService to monitor what is running under the hood. 
 
 BluStation Screenshots:
