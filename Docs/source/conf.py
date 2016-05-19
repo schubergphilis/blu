@@ -285,8 +285,8 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 
-sys.path.append(sys.path.append('''..\docs\ext'''))
-extensions = ['breathe']
+# sys.path.append(sys.path.append('''..\docs\ext'''))
+extensions = [ "breathe" ]
 breathe_projects = {
     "BluApi": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluApi\xml", 
     "BluLang": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluLang\xml",
