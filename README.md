@@ -32,6 +32,4 @@ This new PowerShell behavior, which is extreamly useful in PowerShell automation
 It happens becuase Blu PowerShell service does not dispose the vaiables in current the scope unless you dispose them manually.  
 You can also look at Windows event viewer for event id 271, source BluService to monitor what is running under the hood. 
 
-To know more about many other futures of Blu framework, please continue reading: 
-
-[a link](http://backslashblu.readthedocs.io/)
+To know more about many other futures of Blu framework, please continue reading: [Blu Documentation](http://backslashblu.readthedocs.io/)
