@@ -286,12 +286,12 @@ texinfo_documents = [
 
 
 # sys.path.append(sys.path.append('''D:\GIT\SBP\Blu\Docs\ext'''))
-extensions = ['breathe']
-breathe_projects = {
-    "BluApi": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluApi\xml", 
-    "BluLang": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluLang\xml",
-    "BluIpc": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluIpc\xml",
-    "BluService": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluService\xml",
-    "BluShell": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluShell\xml"
-    }
-breathe_default_project = "BluApi"
+# extensions = ['breathe']
+#breathe_projects = {
+#    "BluApi": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluApi\xml", 
+#    "BluLang": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluLang\xml",
+#    "BluIpc": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluIpc\xml",
+#    "BluService": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluService\xml",
+#    "BluShell": r"D:\GIT\SBP\Blu\Docs\doxygen\output\BluShell\xml"
+#    }
+# breathe_default_project = "BluApi"
