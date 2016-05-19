@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Common\logo\blu2.png"/>
+  <img src="Common\logo\blu.png"/>
 </p>
 
 Blu Powershell service
