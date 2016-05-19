@@ -1,0 +1,32 @@
+# Doxyfile 1.8.10
+
+#---------------------------------------------------------------------------
+# Project related configuration options
+#---------------------------------------------------------------------------
+#-------------------------------
+# Project Configuration options
+#-------------------------------
+INPUT                  = D:\GIT\SBP\Blu\BluShell
+OUTPUT_DIRECTORY       = D:\GIT\SBP\Blu\Docs\doxygen\output\BluShell
+
+#-------------------------------
+# Common Configuration options
+#-------------------------------
+DOXYFILE_ENCODING      = UTF-8
+PROJECT_NAME           = BluShell
+OPTIMIZE_OUTPUT_JAVA   = YES
+EXTRACT_ALL            = NO
+HIDE_SCOPE_NAMES       = YES
+GENERATE_XML           = YES
+GENERATE_HTML          = NO
+GENERATE_DOCSET        = NO
+GENERATE_CHI           = NO
+GENERATE_QHP           = NO
+GENERATE_ECLIPSEHELP   = NO
+GENERATE_TREEVIEW      = NO
+GENERATE_RTF           = NO
+GENERATE_MAN           = NO
+GENERATE_DOCBOOK       = NO
+GENERATE_LATEX         = NO
+FILE_PATTERNS          = *.cs
+RECURSIVE              = YES

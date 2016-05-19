@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A25EB1B3-BDD7-47F5-81C7-0B39A9EA24B5}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BluService</RootNamespace>
+    <AssemblyName>BluService</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>backslash.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Common\lib\automation\v2\System.Management.Automation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\BluIpc\Common\Config.cs">
+      <Link>BluIpc\Common\Config.cs</Link>
+    </Compile>
+    <Compile Include="..\BluIpc\Common\EventLogHelper.cs">
+      <Link>BluIpc\Common\EventLogHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\BluIpc\Common\RegistryHelper.cs">
+      <Link>BluIpc\Common\RegistryHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\BluIpc\Common\StringHelper.cs">
+      <Link>BluIpc\Common\StringHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\BluIpc\Server\IIpcCallback.cs">
+      <Link>BluIpc\Server\IIpcCallback.cs</Link>
+    </Compile>
+    <Compile Include="..\BluIpc\Server\IpcPipeData.cs">
+      <Link>BluIpc\Server\IpcPipeData.cs</Link>
+    </Compile>
+    <Compile Include="..\BluIpc\Server\IpcService.cs">
+      <Link>BluIpc\Server\IpcService.cs</Link>
+    </Compile>
+    <Compile Include="BluIpcServer.cs" />
+    <Compile Include="BluService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="BluService.Designer.cs">
+      <DependentUpon>BluService.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PowerShellRunspace.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="backslash.ico" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>net stop "Blu Powershell Runspace Service" 2&gt;nul 1&gt;nul
+EXIT 0</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>Copy /Y $(SolutionDir)BluService\bin\release\BluService.exe $(SolutionDir)Cookbooks\blu\files\default\BluService.exe
+Copy /Y $(SolutionDir)BluService\bin\release\BluService.exe c:\blu\BluService.exe
+net start "Blu Powershell Runspace Service" 2&gt;nul 1&gt;nul
+EXIT 0
+rem EXIT 0</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

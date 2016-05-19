@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{57F9BB7C-4F73-47BE-9485-D2C01F3793EE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BluLang</RootNamespace>
+    <AssemblyName>BluLang</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto">
+      <HintPath>..\Common\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="IronRuby, Version=1.1.3.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Common\lib\IronRuby.dll</HintPath>
+    </Reference>
+    <Reference Include="IronRuby.Libraries, Version=1.1.3.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Common\lib\IronRuby.Libraries.dll</HintPath>
+    </Reference>
+    <Reference Include="Irony, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Common\lib\Irony.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Dynamic, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Common\lib\Microsoft.Dynamic.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Common\lib\Microsoft.Scripting.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Common\lib\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http">
+      <HintPath>..\Common\lib\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\BluApi\Chef\ChefAPI\ChefAPI.cs">
+      <Link>BluApi\Chef\ChefAPI\ChefAPI.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Chef\ChefAPI\ChefConfig.cs">
+      <Link>BluApi\Chef\ChefAPI\ChefConfig.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Chef\ChefAPI\ChefEndpoint.cs">
+      <Link>BluApi\Chef\ChefAPI\ChefEndpoint.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Chef\ChefAPI\ChefRequest.cs">
+      <Link>BluApi\Chef\ChefAPI\ChefRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Chef\ChefAPI\XOpsProtocol.cs">
+      <Link>BluApi\Chef\ChefAPI\XOpsProtocol.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Chef\ChefResources\Client.cs">
+      <Link>BluApi\Chef\ChefResources\Client.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Chef\ChefResources\Cookbook.cs">
+      <Link>BluApi\Chef\ChefResources\Cookbook.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Chef\ChefResources\Node.cs">
+      <Link>BluApi\Chef\ChefResources\Node.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Common\AssemblyResolver.cs">
+      <Link>BluApi\Common\AssemblyResolver.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Common\Function.cs">
+      <Link>BluApi\Common\Function.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Common\IOHelper.cs">
+      <Link>BluApi\Common\IOHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Common\JsonHelper.cs">
+      <Link>BluApi\Common\JsonHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Common\KeyHelper.cs">
+      <Link>BluApi\Common\KeyHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Common\Logger.cs">
+      <Link>BluApi\Common\Logger.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Common\OpenSSL.cs">
+      <Link>BluApi\Common\OpenSSL.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Common\RegistryHelper.cs">
+      <Link>BluApi\Common\RegistryHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Common\RubyHelper.cs">
+      <Link>BluApi\Common\RubyHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\BluApi\Common\StringHelper.cs">
+      <Link>BluApi\Common\StringHelper.cs</Link>
+    </Compile>
+    <Compile Include="RubyScope\DSL\Generator.Notifier.cs" />
+    <Compile Include="RubyScope\DSL\Generator.Transformer.cs" />
+    <Compile Include="RubyScope\DSL\Generator.Block.cs" />
+    <Compile Include="RubyScope\DSL\Generator.CallArguments.cs" />
+    <Compile Include="RubyScope\DSL\Generator.Attribute.cs" />
+    <Compile Include="RubyScope\DSL\Generator.Command.cs" />
+    <Compile Include="RubyScope\DSL\Generator.Root.cs" />
+    <Compile Include="RubyScope\DSL\Generator.Statement.cs" />
+    <Compile Include="RubyScope\DSL\Generator.cs" />
+    <Compile Include="RubyScope\DSL\Generator.Resource.cs" />
+    <Compile Include="RubyScope\Engine\RubyEngine.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RubyScope\RubyTops\RubyTops.cs" />
+    <Compile Include="RubyScope\RubyTops\RubyTops.PowerShell.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="RubyScope\RubyTops\RubyTops.Notification.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BluLang.cd" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

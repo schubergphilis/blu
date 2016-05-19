@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="BluApi.Common.RubyHelper" Collapsed="true">
+    <Position X="2.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Common\RubyHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluLang.RubyScope.DSL.Generator" Collapsed="true">
+    <Position X="4.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAQGEQAMAKCAgAiAAICAUAAAAAAABAAAAAAAFAAAEA=</HashCode>
+      <FileName>RubyScope\DSL\Generator.Attribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluLang.RubyScope.Engine.RubyEngine" Collapsed="true">
+    <Position X="3" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAAAQAAAAAAAAgAAAAAAAIAACAAAAogAA=</HashCode>
+      <FileName>RubyScope\Engine\RubyEngine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluLang.RubyScope.RubyTops.RubyTops" Collapsed="true">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BQAAAgAAAAAAAAgAAAAAAAQAgABAAQAAAAAAAAAAAAA=</HashCode>
+      <FileName>RubyScope\RubyTops\RubyTops.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Chef.ChefAPI.ChefApi" Collapsed="true">
+    <Position X="7.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAIAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Chef\ChefAPI\ChefAPI.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Chef.ChefAPI.ChefConfig" Collapsed="true">
+    <Position X="4" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABgAAACIIACAABAAAAAAAQAAAAAAAwAAAAAAAoAE=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Chef\ChefAPI\ChefConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Chef.ChefAPI.ChefConfigurator" Collapsed="true">
+    <Position X="5.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAgACAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Chef\ChefAPI\ChefConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Chef.ChefAPI.ChefEndpoint" Collapsed="true">
+    <Position X="2.25" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Chef\ChefAPI\ChefEndpoint.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Chef.ChefAPI.ChefRequest" Collapsed="true">
+    <Position X="0.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAAAAAAACEEAAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Chef\ChefAPI\ChefRequest.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Chef.ChefAPI.XOpsProtocol" Collapsed="true">
+    <Position X="4" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAIAAAAgAAAEACAAAAAAAAAAAACAAAAAAAAAFAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Chef\ChefAPI\XOpsProtocol.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Chef.ChefResources.Client" Collapsed="true">
+    <Position X="2.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Chef\ChefResources\Client.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Chef.ChefResources.Cookbook" Collapsed="true">
+    <Position X="5.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAIAAAAAAAAAAAgAAAAAAECAAIAEAIAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Chef\ChefResources\Cookbook.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Chef.ChefResources.Node" Collapsed="true">
+    <Position X="4" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAQAAEAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Chef\ChefResources\Node.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Common.AssemblyResolver" Collapsed="true">
+    <Position X="5.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Common\AssemblyResolver.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Common.Function" Collapsed="true">
+    <Position X="4" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAQAAAAABBAAAAAAIAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Common\Function.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Common.IOHelper" Collapsed="true">
+    <Position X="2.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Common\IOHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Common.JsonHelper" Collapsed="true">
+    <Position X="0.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAABAAAAAAACBAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Common\JsonHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Common.KeyHelper" Collapsed="true">
+    <Position X="7.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Common\KeyHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Common.Logger" Collapsed="true">
+    <Position X="7.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Common\Logger.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Common.OpenSSL" Collapsed="true">
+    <Position X="5.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAAAAAABAAAAAAAAAABAAAAAgAAAAAAEA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Common\OpenSSL.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Common.RegistryHelper" Collapsed="true">
+    <Position X="4" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAAAAAAAAAAACAgAAQAQAAAAAAAgAEAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Common\RegistryHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BluApi.Common.StringHelper" Collapsed="true">
+    <Position X="0.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQgAAAAAAAAAAQAAAAAAARAAAAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>D:\Github\BackslashBlu\BluApi\Common\StringHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
