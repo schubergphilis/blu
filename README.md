@@ -4,7 +4,7 @@
 
 # Blu Powershell Service
 ----------------------
-[Reference page on ReadTheDocs](http://backslashblu.readthedocs.io/)
+[Reference page on ReadTheDocs](http://backslashblu.readthedocs.io/en/latest/powershell.html)
 
 Getting started
 ---------------
