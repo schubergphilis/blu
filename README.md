@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="your_relative_path_here"/>
+  <img src="Common\logo\blu.png"/>
 </p>
-
-![alt tag](Common\logo\blu.png)
 
 Blu Powershell service
 ----------------------
