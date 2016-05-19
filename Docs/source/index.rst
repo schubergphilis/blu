@@ -30,4 +30,11 @@ You can also look at Windows event viewer for event id 271, source BluService to
 
 To know more about many other futures of Blu framework, please continue reading: 
 
+.. toctree::
+    about
+    powershell
+    blustation
+    dotnet
 
+.. toctree::
+   :hidden:
