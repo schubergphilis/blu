@@ -6,6 +6,10 @@
 ----------------------
 [Reference page on ReadTheDocs](http://backslashblu.readthedocs.io/en/latest/powershell.html)
 
+Blu is a new way to leverage Chef methods in Windows using PowerShell. To use Blu you need a Chef server installed and properly configured in your infrastructure. 
+** Blu is a set of Chef client-side tools, following all the methods and concepts, accepted by the Chef community. **
+
+
 Getting started
 ---------------
 
