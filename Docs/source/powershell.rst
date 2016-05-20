@@ -11,17 +11,17 @@ About PowerShell Service
 ************************
 
 Powershell_script resource in a normal Chef run is limited to a single PowerShell runspace. |br| 
-When the resource execution is completed, all variables and object are garbage collected and are not accesible anymore. |br|  
+When the resource execution is completed, all variables and object are garbage collected and are not accessible anymore. |br|  
 This has major affects on the way we write cookbooks using PowerShell: a PowerShell configuration script cannot be structured in multiple resources and/or files. |br| 
 For extensive PowerShell scripting, this ends up to an unreadable and long scripts in a single powershell_script resource and/or using template for config scripts. |br|
 Also Ruby runtime is 32-bit which limits powershell_script to only 32-bit binaries and CmdLets, e.g. Microsoft Exchange Server and SharePoint. |br|
 
 .. note::
-	In Windows, It is not possible to run a 64-bit process as a child of a 32-bit process. The only method to communicate between 32-bit and 64-bit processes is IPC (interprocess communicatioin) This method is used in Blu PowerShell service to escape the 32-bit limitation of Ruby.exe  
+	In Windows, It is not possible to run a 64-bit process as a child of a 32-bit process. The only method to communicate between 32-bit and 64-bit processes is IPC (interprocess communication) This method is used in Blu PowerShell service to escape the 32-bit limitation of Ruby.exe  
 
 
 Blu PowerShell service (a part of the blu cookbook) is meant to address both issues. |br| 
-This Windows service which is installed automatically when you add blu cookbook to the node run_list, invokes a PowerShell runspace which is valid during the lifecycle of the Windows service. |br| 
+This Windows service which is installed automatically when you add blu cookbook to the node run_list, invokes a PowerShell runspace which is valid during the life cycle of the Windows service. |br| 
 The objects are only garbage collected when it is specifically requested in the recipe. |br| |br|
 The following code disposes Blu PowerShell runspace: |br|
    
@@ -35,7 +35,7 @@ The following code disposes Blu PowerShell runspace: |br|
 
 
 .. warning::
-	If a cookbook doesn't dispose the runspace in the default recipe, all PowerShell vairables and objects from the previous chef run are still valid. This might cause unexpected results. Therefore it is a good practice to dispose PowerShell runspace at the begin and end of a cookbook code.    
+	If a cookbook doesn't dispose the runspace in the default recipe, all PowerShell variables and objects from the previous chef run are still valid. This might cause unexpected results. Therefore it is a good practice to dispose PowerShell runspace at the begin and end of a cookbook code.    
 
 
 The following screenshot illustrates how Blu PowerShell Service escapes the 32-bit Ruby/Chef boundary during Microsoft Exchange 2016 setup and runs ExSetup.exe in a 64-bit address space:
@@ -111,19 +111,19 @@ You can use **blu_script** resource in recipe like the **powershell_script** res
 
 
 .. note::
-	From this point on, your blu_script resources has access to ServerManager and ActiveDirectory snap-ins everywhere in recepies. These snapins remain valid until you dispose the runspace as specified above.    
+	From this point on, your blu_script resources has access to ServerManager and ActiveDirectory snap-ins everywhere in recipes. These snap-ins remain valid until you dispose the runspace as specified above.    
 
-A good practice is to define variables and snapin by **action :define** and run PowerShell converge scripts by **action :run** so that PowerShell code is more readable and also you can take advantage of other mechanisms of **define** action like type conversion. |br|
+A good practice is to define variables and snap-in by **action :define** and run PowerShell converge scripts by **action :run** so that PowerShell code is more readable and also you can take advantage of other mechanisms of **define** action like type conversion. |br|
 **Marshalling** between Ruby and PowerShell is covered later in this document. 
 
 .. warning::
-    If you don't check the loaded snapin before loading them, by **If (!(Get-module <name>))** and also do not dispose PowerShell runspace, in the next Chef run you get an error that the required snapin is already loaded. 
+    If you don't check the loaded snap-in before loading them, by **If (!(Get-module <name>))** and also do not dispose PowerShell runspace, in the next Chef run you get an error that the required snap-in is already loaded. 
 
  
 *******************************
 Marshalling and Type conversion
 *******************************
-Currently there are 4 new convertable data types are added to the blu namespace, namely blu_true, blu_false, blu_nil and blu_array:
+Currently there are 4 new data types are added to the blu namespace, namely blu_true, blu_false, blu_nil and blu_array:
 
 Booleans (blu_true / blu_false):
 --------------------------------   
@@ -170,7 +170,7 @@ And use them in the blu_script:
     
     
 
-When the resource action is **define**, Blu PowerShell service marshalls these attributes from string to PowerShell specific boolean types of **$True** and **$False**.
+When the resource action is **define**, Blu PowerShell service marshals these attributes from string to PowerShell specific boolean types of **$True** and **$False**.
 
 .. note::
 	Such a type conversion does not happen when the resource action is ":run". We assume that all variables that need to be converted are defined in the blu_scripts with ":define" action.      
@@ -252,10 +252,10 @@ Do something with it:
     end   
 
 **********************
-Guards and interpeters
+Guards and interpreters
 **********************
 
-Because blu_script is a Chef LWRP, all the syntax and rules of a resource gurard and interpreters are valid, example:
+Because blu_script is a Chef LWRP, all the syntax and rules of a resource guard and interpreters are valid, example:
 
 .. code-block:: ruby
 
