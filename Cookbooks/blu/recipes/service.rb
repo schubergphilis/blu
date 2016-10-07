@@ -28,7 +28,7 @@ end
 cookbook_file node['blu']['root'] + '\_BluService.exe' do
     source 'BluService.exe'
     action :create
-    notifies :run, 'powershell_script[register_blu_service]'
+    notifies :run, 'powershell_script[register_blu_service]', :immediately
 end
 
 # If bluservice.exe file is updated by cookbook: stop service > copy file > start service
@@ -81,7 +81,7 @@ powershell_script 'register_blu_service' do
     }  
   EOF
   action :nothing
-  notifies :start, 'service[BluService]'
+  notifies :start, 'service[BluService]', :immediately
 end
 
 # Start Blu Service
