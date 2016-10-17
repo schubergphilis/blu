@@ -234,7 +234,7 @@ Define $array in blu_script:
     code <<-EOF
         $Foods  = '#{node['myapp']['attribute4']}'
     EOF
-    action :run
+    action :define
     end   
 
 Do something with it:
