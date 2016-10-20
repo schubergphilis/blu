@@ -26,7 +26,7 @@ default['blu']['install_blu_service'] = true
 # Determines if powershell.exe should be placed in embedded directory (overriding powershell.exe for Chef client)
 default['blu']['override_powershell'] = false
 
-# Determines if blu station is installed and sprint is run (Please reffer to blu documentation) 
+# Determines if blu station is installed and sprint is run (Please reffer to blu documentation)
 default['blu']['install_blu_station'] = false
 default['blu']['sprint'] = false
 

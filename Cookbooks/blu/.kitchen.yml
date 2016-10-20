@@ -1,0 +1,26 @@
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_zero
+  require_chef_omnibus: <%= ENV['CHEF_VERSION'] || '12' %>
+
+
+platforms:
+  - name: windows_2012_r2
+    driver_config:
+      communicator: winrm
+      vm_hostname: false
+      gui: true
+    transport:
+      name: winrm
+
+suites:
+  - name: default
+    run_list:
+      - recipe[blu::default]
+    attributes:
+      blu:
+        serviceaccount: '.\vagrant'
+        serviceaccount_pw: 'vagrant'

@@ -21,16 +21,15 @@ require 'win32/service'
 use_inline_resources
 
 unless ::Win32::Service.exists?('BluService')
-    Chef::Log.warn("--------------------------------------------------------------")
-    Chef::Log.warn(" Blu Powershell Service is not installed on this machine yet.")
-    Chef::Log.warn(" All blu_script resources are ignored in the current chef run.")
-    Chef::Log.warn("--------------------------------------------------------------")
+  Chef::Log.warn('--------------------------------------------------------------')
+  Chef::Log.warn(' Blu Powershell Service is not installed on this machine yet.')
+  Chef::Log.warn(' All blu_script resources are ignored in the current chef run.')
+  Chef::Log.warn('--------------------------------------------------------------')
 end
-
 
 action :run do
   new_resource.updated_by_last_action(true)
-  execute "blu_script" do
+  execute 'blu_script' do
     cwd node['blu']['root']
     command "#{node['blu']['root']}\\BluShell.exe -Command \"#{new_resource.code}\""
     only_if { ::Win32::Service.exists?('BluService') }
@@ -39,10 +38,9 @@ end
 
 action :define do
   new_resource.updated_by_last_action(true)
-  execute "blu_script" do
+  execute 'blu_script' do
     cwd node['blu']['root']
     command "#{node['blu']['root']}\\BluShell.exe -Define \"#{new_resource.code}\""
     only_if { ::Win32::Service.exists?('BluService') }
   end
 end
-
