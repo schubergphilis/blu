@@ -18,77 +18,75 @@
 # limitations under the License.
 #
 
-
 # Create configuration in registry HKLM\Software\Blu\Config
 # ---------------------------------------------------------
 # ClientName
-registry_key "HKEY_LOCAL_MACHINE\\Software\\Blu\\Config" do
+registry_key 'HKEY_LOCAL_MACHINE\\Software\\Blu\\Config' do
   values [{
-    :name => 'ClientName',
-    :type => :string,
-    :data => Chef::Config[:node_name]
+    name: 'ClientName',
+    type: :string,
+    data: Chef::Config[:node_name]
   }]
   action :create
   recursive true
 end
 
 # ClientPath
-registry_key "HKEY_LOCAL_MACHINE\\Software\\Blu\\Config" do
+registry_key 'HKEY_LOCAL_MACHINE\\Software\\Blu\\Config' do
   values [{
-    :name => 'ClientPath',
-    :type => :string,
-    :data => node['blu']['conf_dir']
+    name: 'ClientPath',
+    type: :string,
+    data: node['blu']['conf_dir']
   }]
   action :create
 end
 
 # ClientPem
-registry_key "HKEY_LOCAL_MACHINE\\Software\\Blu\\Config" do
+registry_key 'HKEY_LOCAL_MACHINE\\Software\\Blu\\Config' do
   values [{
-    :name => 'ClientPem',
-    :type => :string,
-    :data => Chef::Config[:client_key]
+    name: 'ClientPem',
+    type: :string,
+    data: Chef::Config[:client_key]
   }]
   action :create
 end
 
 # ClientRb
-registry_key "HKEY_LOCAL_MACHINE\\Software\\Blu\\Config" do
+registry_key 'HKEY_LOCAL_MACHINE\\Software\\Blu\\Config' do
   values [{
-    :name => 'ClientRb',
-    :type => :string,
-    :data => node['blu']['conf_dir'] + "\\client.rb"
+    name: 'ClientRb',
+    type: :string,
+    data: node['blu']['conf_dir'] + '\\client.rb'
   }]
   action :create
 end
 
 # NodeName
-registry_key "HKEY_LOCAL_MACHINE\\Software\\Blu\\Config" do
+registry_key 'HKEY_LOCAL_MACHINE\\Software\\Blu\\Config' do
   values [{
-    :name => 'NodeName',
-    :type => :string,
-    :data => Chef::Config[:node_name]
+    name: 'NodeName',
+    type: :string,
+    data: Chef::Config[:node_name]
   }]
   action :create
 end
 
-
 # Organization
-registry_key "HKEY_LOCAL_MACHINE\\Software\\Blu\\Config" do
+registry_key 'HKEY_LOCAL_MACHINE\\Software\\Blu\\Config' do
   values [{
-    :name => 'Organization',
-    :type => :string,
-    :data => Chef::Config[:organization]
+    name: 'Organization',
+    type: :string,
+    data: Chef::Config[:organization]
   }]
   action :create
 end
 
 # OrganizationUri
-registry_key "HKEY_LOCAL_MACHINE\\Software\\Blu\\Config" do
+registry_key 'HKEY_LOCAL_MACHINE\\Software\\Blu\\Config' do
   values [{
-    :name => 'OrganizationUri',
-    :type => :string,
-    :data => Chef::Config[:chef_server_url]
+    name: 'OrganizationUri',
+    type: :string,
+    data: Chef::Config[:chef_server_url]
   }]
   action :create
 end
@@ -96,6 +94,6 @@ end
 # Copy BluStation.dll to the script path
 # --------------------------------------
 cookbook_file node['blu']['root'] + '\BluStation.dll' do
-    source 'BluStation.dll'
-    action :create
+  source 'BluStation.dll'
+  action :create
 end

@@ -21,5 +21,5 @@
 # Start Sprint
 # ------------
 blu_sprint 'start_sprint' do
-	action :start_sprint
+  action :start_sprint
 end

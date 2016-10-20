@@ -1,0 +1,7 @@
+DEPENDENCIES
+  blu
+    path: .
+    metadata: true
+
+GRAPH
+  blu (0.1.2)

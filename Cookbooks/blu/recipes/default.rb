@@ -18,13 +18,4 @@
 # limitations under the License.
 #
 
-# Create runtime directory
-# ------------------------
-directory node['blu']['root'] do
-  recursive true 
-  action :create
-end
-
-if node['blu']['install_blu_service'] == true 
-  include_recipe "blu::service"
-end
+include_recipe 'blu::service' if node['blu']['install_blu_service']

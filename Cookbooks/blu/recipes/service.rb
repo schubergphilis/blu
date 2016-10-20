@@ -1,5 +1,5 @@
 #
-# Author:: Gitlocker (<aahmadi@schubergphilis.com>)
+# Author:: Gitlocker (<aahmadi@schubergphilis.com>) / Richard van der Brugge
 # Cookbook Name:: blu
 # Recipe::service
 #
@@ -18,74 +18,20 @@
 # limitations under the License.
 #
 
-# Copy BluShell.exe to the root path
-cookbook_file node['blu']['root'] + '\BluShell.exe' do
-    source 'BluShell.exe'
-    action :create
+directory node['blu']['root']
+
+remote_directory node['blu']['root'] do
+  source 'blu'
+  notifies :run, 'execute[create BluService]', :immediately
 end
 
-# Copy BluService.exe to the root path as a temp file (to check if the file is updated by cookbook)
-cookbook_file node['blu']['root'] + '\_BluService.exe' do
-    source 'BluService.exe'
-    action :create
-    notifies :run, 'powershell_script[register_blu_service]', :immediately
-end
-
-# If bluservice.exe file is updated by cookbook: stop service > copy file > start service
-# Register service if it is not registered yet
-passwords = Chef::EncryptedDataBagItem.load("blu", "passwords")
-powershell_script 'register_blu_service' do
-  code <<-EOF
-    $bluservice_exe_temp_file = "#{node['blu']['root']}\\_BluService.exe";
-    $binaryPath = "#{node['blu']['root']}\\BluService.exe";
-    $secpasswd = ConvertTo-SecureString "#{passwords[node.chef_environment]}" -AsPlainText -Force
-    $credentials = New-Object System.Management.Automation.PSCredential ("#{node.chef_environment + '\svc_blu'}", $secpasswd)
-    
-    function RegisterBluService
-    {
-        Copy-Item $bluservice_exe_temp_file $binaryPath;
-        if (!(Get-Service "BluService" -ErrorAction SilentlyContinue))
-        {
-            New-Service -Name BluService `
-                -DisplayName "Blu Powershell Runspace Service" `
-                -Description "Provides a Runspace to execute PowerShell commands in service mode." `
-                -BinaryPathName $binaryPath `
-                -StartupType Automatic `
-                -Credential $credentials
-        }
-    }
-    
-    function UpdateBluService
-    {
-        Stop-Service BluService;
-        Copy-Item $bluservice_exe_temp_file $binaryPath;
-    }
-    
-    if (Test-Path $binaryPath) 
-    {
-        if ((Get-Item $bluservice_exe_temp_file).LastWriteTime -gt (Get-Item $binaryPath).LastWriteTime)
-        {
-            if (Get-Service "BluService" -ErrorAction SilentlyContinue)
-            {
-                UpdateBluService;
-            }
-            else
-            {
-                RegisterBluService;
-            }
-        }
-    }
-    else 
-    { 
-        RegisterBluService; 
-    }  
-  EOF
+execute 'create BluService' do
+  command "sc create \"BluService\" binpath=\"#{node['blu']['root']}\\BluService.exe\" DisplayName=\"Provides a Runspace to execute PowerShell commands in service mode.\" "
   action :nothing
-  notifies :start, 'service[BluService]', :immediately
 end
 
-# Start Blu Service
-service 'BluService' do
-  startup_type :automatic
-  action :nothing
+windows_service 'BluService' do
+  run_as_user  node['blu']['serviceaccount']
+  run_as_password  node['blu']['serviceaccount_pw']
+  action [:enable, :start]
 end
