@@ -1,4 +1,7 @@
-﻿using System.ServiceProcess;
+﻿using System;
+using System.Linq;
+using System.ServiceProcess;
+using System.Threading;
 
 namespace BluService
 {
@@ -11,12 +14,27 @@ namespace BluService
         /// sc description "Blu Powershell Runspace Service" "Provides a Runspace to execute PowerShell commands in service mode."
         /// sc delete "Blu Powershell Runspace Service"
         /// </summary>
-        static void Main()
+        private static void Main(string[] args)
         {
-            ServiceBase[] bluService = { 
-                new BluService() 
-            };
-            ServiceBase.Run(bluService);
+            if (args.Contains("/standalone"))
+            {
+                var service = new BluService();
+                service.Run();
+                Console.WriteLine("Press Q to stop");
+                while (Console.ReadKey(true).Key != ConsoleKey.Q)
+                {
+                    Thread.Sleep(100);
+                }
+                service.Stop();
+            }
+            else
+            {
+                ServiceBase[] bluService =
+                {
+                    new BluService()
+                };
+                ServiceBase.Run(bluService);
+            }
         }
     }
 }

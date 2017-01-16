@@ -28,25 +28,6 @@ namespace BluIpc.Common
                 // ignored
             }
         }
-
-        [Obsolete("Prefer the WriteToEventLog implementation with EventTypes, this will be removed in a future version")]
-        public static void WriteToEventLog(string serviceName, int type, string message)
-        {
-            EventLogEntryType eType;
-            switch (type)
-            {
-                case 0:
-                    eType = EventLogEntryType.Information;
-                    break;
-                case 1:
-                    eType = EventLogEntryType.Warning;
-                    break;
-                default:
-                    eType = EventLogEntryType.Error;
-                    break;
-            }
-            WriteToEventLog(serviceName, eType, message);
-        }
     }
 }
 

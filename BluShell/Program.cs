@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO.Pipes;
 using System.Text;
 using BluIpc.Client;
@@ -48,7 +49,7 @@ namespace BluShell
             }
             catch (Exception ex)
             {
-                EventLogHelper.WriteToEventLog(Config.ShellName, 2, "Exception in send/recieve script block: " + Environment.NewLine + ex.Message);
+                EventLogHelper.WriteToEventLog(Config.ShellName, EventLogEntryType.Error, "Exception in send/recieve script block: " + Environment.NewLine + ex.Message);
                 Environment.Exit(1);
             }
         }
