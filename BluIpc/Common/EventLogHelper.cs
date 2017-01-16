@@ -5,7 +5,7 @@ namespace BluIpc.Common
 {
     public static class EventLogHelper
     {
-        public static void WriteToEventLog(string serviceName, int type, string message)
+        public static void WriteToEventLog(string serviceName, EventLogEntryType type, string message)
         {
             EventLog elog = new EventLog { Source = serviceName, EnableRaisingEvents = true };
             // Truncate output if it is longer than 32756 otherwise we can't write it to EventLog
@@ -21,26 +21,31 @@ namespace BluIpc.Common
 
             try
             {
-                switch (type)
-                {
-                    // Info
-                    case 0:
-                        elog.WriteEntry(tMessage, EventLogEntryType.Information, 271);
-                        break;
-                    // Warning
-                    case 1:
-                        elog.WriteEntry(tMessage, EventLogEntryType.Warning, 271);
-                        break;
-                    // Error
-                    case 2:
-                        elog.WriteEntry(tMessage, EventLogEntryType.Error, 271);
-                        break;
-                }
+                elog.WriteEntry(tMessage, type, 271);
             }
-            catch (Exception)
+            catch
             {
                 // ignored
             }
+        }
+
+        [Obsolete("Prefer the WriteToEventLog implementation with EventTypes, this will be removed in a future version")]
+        public static void WriteToEventLog(string serviceName, int type, string message)
+        {
+            EventLogEntryType eType;
+            switch (type)
+            {
+                case 0:
+                    eType = EventLogEntryType.Information;
+                    break;
+                case 1:
+                    eType = EventLogEntryType.Warning;
+                    break;
+                default:
+                    eType = EventLogEntryType.Error;
+                    break;
+            }
+            WriteToEventLog(serviceName, eType, message);
         }
     }
 }
