@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO.Pipes;
 using System.Text;
 using System.Threading;
@@ -10,61 +11,54 @@ namespace BluService
     public class BluIpcServer : IIpcCallback
     {
         private IpcService _srv;
-        private Int32 _count;
+        private int _count;
+        private PowerShellRunspaceManager _runspaceManager;
 
         public void Start()
         {
+            _runspaceManager = new PowerShellRunspaceManager();
             _srv = new IpcService(Config.PipeName, this, 3);
         }
 
         public void Stop()
         {
             _srv.IpcServerStop();
+            _runspaceManager.Dispose();
         }
 
-        public void OnAsyncConnect(PipeStream pipe, out Object state)
+        public void OnAsyncConnect(PipeStream pipe, out object state)
         {
-            Int32 count = Interlocked.Increment(ref _count);
-            // Utils.EventLogUtil.WriteToEventLog(Utils.Config.ServiceName, 0, "Connected session number: " + count);
+            int count = Interlocked.Increment(ref _count);
             state = count;
         }
 
-        public void OnAsyncDisconnect(PipeStream pipe, Object state)
+        public void OnAsyncDisconnect(PipeStream pipe, object state)
         {
-            // Utils.EventLogUtil.WriteToEventLog(Utils.Config.ServiceName, 0, "Disconnected session number: " + (Int32)state);
         }
 
-        public void OnAsyncMessage(PipeStream pipe, Byte[] data, Int32 bytes, Object state)
+        public void OnAsyncMessage(PipeStream pipe, byte[] data, int bytes, object state)
         {
-            string scriptBlock = String.Empty;
+            string scriptBlock = string.Empty;
             try
             {
                 scriptBlock = Encoding.UTF8.GetString(data, 0, bytes);
-                // EventLogHelper.WriteToEventLog(Config.ServiceName, 0, "IPC Script Block received: " + Environment.NewLine +
-                // "------------------------------------------" + Environment.NewLine +
-                // scriptBlock + Environment.NewLine +
-                // "------------------------------------------" + Environment.NewLine);
             }
             catch (Exception ex)
             {
-                EventLogHelper.WriteToEventLog(Config.ServiceName, 2,
+                EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, 
                     "BluService: There was an error in reading script block as UTF8 string: " + Environment.NewLine + ex.Message);
             }
             
-            // Execute and Write back results
             try
             {
-                string psResult = PowerShellRunspace.ExecuteScriptBlock(scriptBlock);
-                byte[] psResultBytes = Encoding.Default.GetBytes(psResult);
-                string result = Encoding.UTF8.GetString(psResultBytes, 0, Encoding.UTF8.GetByteCount(psResult));
-                data = Encoding.UTF8.GetBytes(result.ToCharArray());
-                pipe.BeginWrite(data, 0, Encoding.UTF8.GetByteCount(result), OnAsyncWriteComplete, pipe);
+                string psResult = _runspaceManager.ExecuteScriptBlock(scriptBlock);
+                data = Encoding.UTF8.GetBytes(psResult);
+                pipe.BeginWrite(data, 0, data.Length, OnAsyncWriteComplete, pipe);
                 pipe.Close();
-
             }
             catch (Exception ex)
             {
-                EventLogHelper.WriteToEventLog(Config.ServiceName, 2,
+                EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, 
                     "There is an error in executing script block UTF8 string: " + Environment.NewLine + ex.Message);
                 pipe.Close();
             }

@@ -1,23 +1,43 @@
 ﻿using System;
 using System.IO;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using BluIpc.Common;
 
 namespace BluService
 {
-    public static class PowerShellRunspace
+    public class PowerShellRunspace : IDisposable
     {
-        public static RunspaceConfiguration RunspaceConfiguration = RunspaceConfiguration.Create();
-        public static Runspace PsRunspace = RunspaceFactory.CreateRunspace(RunspaceConfiguration);
+        readonly RunspaceConfiguration _runspaceConfiguration;
+        Runspace _psRunspace;
 
-        public static string ExecuteScriptBlock(string scriptBlock)
+        public PowerShellRunspace()
+        {
+            _runspaceConfiguration = RunspaceConfiguration.Create();
+            _psRunspace = RunspaceFactory.CreateRunspace(_runspaceConfiguration);
+            Open();
+        }
+
+        private void Open()
+        {
+            try
+            {
+                _psRunspace.Open();
+            }
+            catch (Exception ex)
+            {
+                EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, "Error initializing runspace: " + ex.Message);
+            }
+        }
+
+        public string ExecuteScriptBlock(string scriptBlock)
         {
             Pipeline pipeline;
-            string result = String.Empty;
+            string result = string.Empty;
             string output;
-            string errors = String.Empty;
+            string errors = string.Empty;
 
             if (File.Exists(scriptBlock) && scriptBlock.EndsWith(".ps1"))
             {
@@ -25,7 +45,7 @@ namespace BluService
                 string scriptFile = scriptBlock;
                 try
                 {
-                    EventLogHelper.WriteToEventLog(Config.ServiceName, 0, "Trying to read ps1 file: " + scriptFile);
+                    EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Information, "Trying to read ps1 file: " + scriptFile);
                     scriptBlock = File.ReadAllText(scriptFile)
                         .TrimStart(' ')
                         .TrimStart(Environment.NewLine.ToCharArray())
@@ -33,7 +53,7 @@ namespace BluService
                         .TrimEnd(' ')
                         .TrimEnd(Environment.NewLine.ToCharArray())
                         .TrimEnd('}');
-                    EventLogHelper.WriteToEventLog(Config.ServiceName, 0, "File content is: " + scriptBlock);
+                    EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Information, "File content is: " + scriptBlock);
                 }
                 catch (Exception)
                 {
@@ -43,19 +63,19 @@ namespace BluService
             
             try
             {
-                pipeline = PsRunspace.CreatePipeline();
+                pipeline = _psRunspace.CreatePipeline();
             }
             catch (Exception ex)
             {
                 output = "Error creating pipeline: " + ex.Message;
-                EventLogHelper.WriteToEventLog(Config.ServiceName, 2, output);
+                EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, output);
                 return "Exit1:" + output;
             }
 
             // Dispose Runspace
             if (scriptBlock == "DisposeRunspace")
             {
-                DisposeRunspace();
+                RefreshRunspace();
                 return "Exit0:";
             }
 
@@ -70,14 +90,14 @@ namespace BluService
                     {
                         foreach (ErrorRecord er in error)
                         {
-                            EventLogHelper.WriteToEventLog(Config.ServiceName, 1, "Collecting error messages...");
+                            EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Warning, "Collecting error messages...");
                             try
                             {
                                 if (!string.IsNullOrEmpty(er.Exception.Message))
                                     errors += "Message: " + er.Exception.Message + Environment.NewLine;
                                 if (!string.IsNullOrEmpty(er.Exception.Source))
                                     errors += "Source: " + er.Exception.Source + Environment.NewLine;
-                                if (!string.IsNullOrEmpty(er.Exception.InnerException.ToString()))
+                                if (er.Exception.InnerException != null && !string.IsNullOrEmpty(er.Exception.InnerException.ToString()))
                                     errors += "InnerException: " + er.Exception.InnerException + Environment.NewLine;
                                 if (!string.IsNullOrEmpty(er.Exception.StackTrace))
                                     errors += "StackTrace: " + er.Exception.StackTrace + Environment.NewLine;
@@ -97,7 +117,7 @@ namespace BluService
                             output = "Script Block: " + scriptBlock.FormatForEventLog() + "Executed and returned the following errors:" + 
                                 Config.SeparatorLine + errors;
 
-                            EventLogHelper.WriteToEventLog(Config.ServiceName, 2, output);
+                            EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, output);
                             return "Exit1:" + errors;
                         }
                     }
@@ -110,7 +130,7 @@ namespace BluService
                     case 0:
                         // When there is no error, accept null output as a valid result, so return null
                         output += "Is completed successfully and returned null." + Environment.NewLine;
-                        result = String.Empty;
+                        result = string.Empty;
                         break;
 
                     case 1:
@@ -118,7 +138,7 @@ namespace BluService
                         if (psObjects[0] == null || psObjects[0].BaseObject == null)
                         {
                             output += "Is completed successfully and returned null." + Environment.NewLine;
-                            result = String.Empty;
+                            result = string.Empty;
                         }
                         else
                         {
@@ -138,7 +158,7 @@ namespace BluService
                         }
                         break;
                 }
-                EventLogHelper.WriteToEventLog(Config.ServiceName, 0, "Output: " + output.FormatForEventLog());
+                EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Information, "Output: " + output.FormatForEventLog());
                 return "Exit0:" + result.TrimEnd(Environment.NewLine.ToCharArray()).TrimEnd('\r', '\n');
             }
             catch (Exception ex)
@@ -147,25 +167,26 @@ namespace BluService
                          scriptBlock.FormatForEventLog() +
                          "Reason:" + Environment.NewLine +
                          ex.Message;
-                EventLogHelper.WriteToEventLog(Config.ServiceName, 2, output);
+                EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, output);
                 return "Exit1:" + output;
             }
         }
 
-        public static void DisposeRunspace()
+        public void RefreshRunspace()
         {
-            PsRunspace.Dispose();
-            PsRunspace = null;
-            PsRunspace = RunspaceFactory.CreateRunspace(RunspaceConfiguration);
-            try
+            _psRunspace.Dispose();
+            _psRunspace = null;
+            _psRunspace = RunspaceFactory.CreateRunspace(_runspaceConfiguration);
+            Open();
+            EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Warning, "PowerShell Runspace is disposed." + Environment.NewLine + "All previously definied PS objects are garbage collected.");
+        }
+
+        public void Dispose()
+        {
+            if (_psRunspace != null)
             {
-                PsRunspace.Open();
+                _psRunspace.Dispose();
             }
-            catch (Exception ex)
-            {
-                EventLogHelper.WriteToEventLog(Config.ServiceName, 2, "Error initializing runspace: " + ex.Message);
-            }
-            EventLogHelper.WriteToEventLog(Config.ServiceName, 1, "PowerShell Runspace is disposed." + Environment.NewLine + "All previously definied PS objects are garbage collected.");
         }
     }
 }
