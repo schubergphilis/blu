@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO.Pipes;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using BluIpc.Common;
@@ -11,7 +12,6 @@ namespace BluService
     public class BluIpcServer : IIpcCallback
     {
         private IpcService _srv;
-        private int _count;
         private PowerShellRunspaceManager _runspaceManager;
 
         public void Start()
@@ -26,22 +26,41 @@ namespace BluService
             _runspaceManager.Dispose();
         }
 
-        public void OnAsyncConnect(PipeStream pipe, out object state)
-        {
-            int count = Interlocked.Increment(ref _count);
-            state = count;
-        }
-
-        public void OnAsyncDisconnect(PipeStream pipe, object state)
-        {
-        }
-
         public void OnAsyncMessage(PipeStream pipe, byte[] data, int bytes, object state)
         {
             string scriptBlock = string.Empty;
+            PowerShellRunspace.UserData userData = null;
             try
             {
-                scriptBlock = Encoding.UTF8.GetString(data, 0, bytes);
+                var message = Encoding.UTF8.GetString(data, 0, bytes);
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    var error = "Empty command received.";
+                    EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, error);
+                    var errorBytes = Encoding.UTF8.GetBytes(error);
+                    pipe.Write(errorBytes, 0, errorBytes.Length);
+                    pipe.Close();
+                    return;
+                }
+                var messageParts = message.Split(new[] {Config.MagicSplitString}, StringSplitOptions.None);
+                switch (messageParts.Length)
+                {
+                    case 1:
+                        scriptBlock = messageParts[0];
+                        break;
+                    case 2:
+                        userData = new PowerShellRunspace.UserData(messageParts[0]);
+                        scriptBlock = messageParts[1];
+                        break;
+                    default:
+                        var error = "Unexpected number of message parts. Received " + messageParts.Length + " parts, expecting 1 or 2.";
+                        EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, error);
+                        var errorBytes = Encoding.UTF8.GetBytes(error);
+                        pipe.Write(errorBytes, 0, errorBytes.Length);
+                        pipe.Close();
+                        return;
+                }
+                
             }
             catch (Exception ex)
             {
@@ -51,9 +70,17 @@ namespace BluService
             
             try
             {
-                string psResult = _runspaceManager.ExecuteScriptBlock(scriptBlock);
-                data = Encoding.UTF8.GetBytes(psResult);
-                pipe.BeginWrite(data, 0, data.Length, OnAsyncWriteComplete, pipe);
+                string psResult;
+                if (userData != null)
+                {
+                    psResult = _runspaceManager.ExecuteScriptBlock(scriptBlock, userData);
+                }
+                else
+                {
+                    psResult = _runspaceManager.ExecuteScriptBlock(scriptBlock);
+                }
+                var resultBytes = Encoding.UTF8.GetBytes(psResult);
+                pipe.BeginWrite(resultBytes, 0, resultBytes.Length, OnAsyncWriteComplete, pipe);
                 pipe.Close();
             }
             catch (Exception ex)

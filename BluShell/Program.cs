@@ -13,6 +13,7 @@ namespace BluShell
         {
             InputArguments inputArguments = new InputArguments(args);
             string scriptBlock = String.Empty;
+            string credentials = inputArguments["-Credentials"];
 
             if (!string.IsNullOrEmpty(inputArguments["-Command"]))
             {
@@ -28,15 +29,23 @@ namespace BluShell
             }
             else
             {
-                Console.WriteLine("BluSheel needs to be executed with -Command or -Define or -Execute parameters.");
+                Console.WriteLine("BluShell needs to be executed with -Command or -Define or -Execute parameters.");
                 Environment.Exit(1);
             }
-            
+
             try
             {
-                IpcClient ipcClient = new IpcClient(".", "BluPowerShell");
+                IpcClient ipcClient = new IpcClient(".", Config.PipeName);
                 PipeStream pipe = ipcClient.Connect(1);
-                Byte[] output = Encoding.UTF8.GetBytes(scriptBlock);
+                Byte[] output;
+                if (!string.IsNullOrWhiteSpace(credentials))
+                {
+                    output = Encoding.UTF8.GetBytes(credentials + Config.MagicSplitString + scriptBlock);
+                }
+                else
+                {
+                    output = Encoding.UTF8.GetBytes(scriptBlock);
+                }
                 pipe.Write(output, 0, output.Length);
 
                 // Read the result
@@ -61,7 +70,7 @@ namespace BluShell
         }
     }
 }
-        
-        
-        
+
+
+
 

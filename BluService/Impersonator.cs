@@ -1,58 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Management.Automation;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 
 namespace BluService
 {
-    public enum LogonType
-    {
-        Logon32LogonInteractive = 2,
-        Logon32LogonNetwork = 3,
-        Logon32LogonBatch = 4,
-        Logon32LogonService = 5,
-        Logon32LogonUnlock = 7,
-        Logon32LogonNetworkCleartext = 8, // Win2K or higher
-        Logon32LogonNewCredentials = 9 // Win2K or higher
-    };
-
-    public enum LogonProvider
-    {
-        Logon32ProviderDefault = 0,
-        Logon32ProviderWinnt35 = 1,
-        Logon32ProviderWinnt40 = 2,
-        Logon32ProviderWinnt50 = 3
-    };
-
-    public enum ImpersonationLevel
-    {
-        SecurityAnonymous = 0,
-        SecurityIdentification = 1,
-        SecurityImpersonation = 2,
-        SecurityDelegation = 3
-    }
-
-    internal class Win32NativeMethods
-    {
-        [DllImport("advapi32.dll", SetLastError = true)]
-        public static extern int LogonUser(string lpszUserName,
-             string lpszDomain,
-             string lpszPassword,
-             int dwLogonType,
-             int dwLogonProvider,
-             ref IntPtr phToken);
-
-        [DllImport("advapi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern int DuplicateToken(IntPtr hToken,
-              int impersonationLevel,
-              ref IntPtr hNewToken);
-
-        [DllImport("advapi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool RevertToSelf();
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        public static extern bool CloseHandle(IntPtr handle);
-    }
+    
 
     /// <summary>
     /// Allows code to be executed under the security context of a specified user account.
@@ -84,6 +38,18 @@ namespace BluService
     /// </remarks>
     public class Impersonator : IDisposable
     {
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        private static extern int LogonUser(string lpszUserName,
+            string lpszDomain,
+            string lpszPassword,
+            int dwLogonType,
+            int dwLogonProvider,
+            ref IntPtr phToken);
+        
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        private static extern bool CloseHandle(IntPtr handle);
+
         private WindowsImpersonationContext _wic;
 
         /// <summary>
@@ -93,10 +59,10 @@ namespace BluService
         /// <param name = "domainName" > Name of the domain.</param>
         /// <param name = "password" > The password. <see cref = "System.String" /></ param >
         /// <param name="logonType">Type of the logon.</param>
-        /// <param name = "logonProvider" > The logon provider. <see cref = "Mit.Sharepoint.WebParts.EventLogQuery.Network.LogonProvider" /></ param >
-        public Impersonator(string userName, string domainName, string password, LogonType logonType, LogonProvider logonProvider)
+        /// <param name = "logonProvider" > The logon provider.</ param >
+        public Impersonator(string userName, string domainName, string password, LogonProvider logonProvider)
         {
-            Impersonate(userName, domainName, password, logonType, logonProvider);
+            Impersonate(userName, domainName, password, logonProvider);
         }
 
         /// <summary>
@@ -107,7 +73,17 @@ namespace BluService
         /// <param name = "password" > The password. <see cref = "System.String" /></ param >
         public Impersonator(string userName, string domainName, string password)
         {
-            Impersonate(userName, domainName, password, LogonType.Logon32LogonInteractive, LogonProvider.Logon32ProviderDefault);
+            Impersonate(userName, domainName, password, LogonProvider.Logon32ProviderDefault);
+        }
+
+        /// <summary>
+        /// Begins impersonation with the given credentials for a local account.
+        /// </summary>
+        /// <param name = "userName" > Name of the user.</param>
+        /// <param name = "password" > The password. <see cref = "System.String" /></ param >
+        public Impersonator(string userName, string password)
+        {
+            Impersonate(userName, Environment.MachineName, password, LogonProvider.Logon32ProviderDefault);
         }
 
         /// <summary>
@@ -132,7 +108,7 @@ namespace BluService
         /// <param name = "password" > The password. <see cref = "System.String" /></param >
         public void Impersonate(string userName, string domainName, string password)
         {
-            Impersonate(userName, domainName, password, LogonType.Logon32LogonInteractive, LogonProvider.Logon32ProviderDefault);
+            Impersonate(userName, domainName, password, LogonProvider.Logon32ProviderDefault);
         }
 
         /// <summary>
@@ -143,43 +119,33 @@ namespace BluService
         /// <param name = "password" > The password. <see cref = "System.String" /></param >
         /// < param name="logonType">Type of the logon.</param>
         /// <param name = "logonProvider" > The logon provider.</param >
-        public void Impersonate(string userName, string domainName, string password, LogonType logonType, LogonProvider logonProvider)
+        public void Impersonate(string userName, string domainName, string password, LogonProvider logonProvider)
         {
             UndoImpersonation();
 
-            IntPtr logonToken = IntPtr.Zero;
-            IntPtr logonTokenDuplicate = IntPtr.Zero;
+            var logonToken = IntPtr.Zero;
             try
             {
-                // revert to the application pool identity, saving the identity of the current requestor
-                _wic = WindowsIdentity.Impersonate(IntPtr.Zero);
-
-                // do logon & impersonate
-                if (Win32NativeMethods.LogonUser(userName,
-                    domainName,
-                    password,
-                    (int)logonType,
-                    (int)logonProvider,
-                    ref logonToken) != 0)
+                if (LogonUser(userName,
+                        domainName,
+                        password,
+                        (int) LogonType.Logon32LogonInteractive,
+                        (int) logonProvider,
+                        ref logonToken) != 0)
                 {
-                    if (Win32NativeMethods.DuplicateToken(logonToken, (int)ImpersonationLevel.SecurityImpersonation, ref logonTokenDuplicate) != 0)
-                    {
-                        var wi = new WindowsIdentity(logonTokenDuplicate);
-                        wi.Impersonate(); // discard the returned identity context (which is the context of the application pool)
-                    }
-                    else
-                        throw new Win32Exception(Marshal.GetLastWin32Error());
+                    _wic = WindowsIdentity.Impersonate(logonToken);
                 }
                 else
+                {
                     throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
             }
             finally
             {
                 if (logonToken != IntPtr.Zero)
-                    Win32NativeMethods.CloseHandle(logonToken);
-
-                if (logonTokenDuplicate != IntPtr.Zero)
-                    Win32NativeMethods.CloseHandle(logonTokenDuplicate);
+                {
+                    CloseHandle(logonToken);
+                }
             }
         }
 
@@ -194,4 +160,23 @@ namespace BluService
             _wic = null;
         }
     }
+
+    public enum LogonType
+    {
+        Logon32LogonInteractive = 2,
+        Logon32LogonNetwork = 3,
+        Logon32LogonBatch = 4,
+        Logon32LogonService = 5,
+        Logon32LogonUnlock = 7,
+        Logon32LogonNetworkCleartext = 8, // Win2K or higher
+        Logon32LogonNewCredentials = 9 // Win2K or higher
+    };
+
+    public enum LogonProvider
+    {
+        Logon32ProviderDefault = 0,
+        Logon32ProviderWinnt35 = 1,
+        Logon32ProviderWinnt40 = 2,
+        Logon32ProviderWinnt50 = 3
+    };
 }
