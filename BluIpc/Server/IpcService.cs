@@ -38,15 +38,6 @@ namespace BluIpc.Server
             _pipeSecurity.AddAccessRule(
                 new PipeAccessRule(WindowsIdentity.GetCurrent().User, PipeAccessRights.FullControl, AccessControlType.Allow)
             );
-            
-            // To give access to all authenticated users (NOT SECURE!)
-            /*
-            _pipeSecurity.AddAccessRule(
-                new PipeAccessRule(
-                    new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null), PipeAccessRights.ReadWrite, AccessControlType.Allow
-                )
-            );
-            */
 
             // Give access to builtin Administrators only 
             _pipeSecurity.AddAccessRule(
@@ -127,9 +118,6 @@ namespace BluIpc.Server
                 // Prepare for next connection
                 IpcServerPipeCreate();
 
-                // Alert server that client connection exists
-                _iipcCallback.OnAsyncConnect(pipe, out pd.State);
-
                 // Accept messages
                 BeginRead(pd);
             }
@@ -157,7 +145,6 @@ namespace BluIpc.Server
 
             if (isConnected) return;
             pd.Pipe.Close();
-            _iipcCallback.OnAsyncDisconnect(pd.Pipe, pd.State);
             lock (_pipes)
             {
                 bool removed = _pipes.Remove(pd.Pipe);
