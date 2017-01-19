@@ -77,7 +77,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>Copy /Y $(SolutionDir)BluShell\bin\release\BluShell.exe $(SolutionDir)cookbooks\blu\files\default\BluShell.exe
+    <PostBuildEvent>rem Copy /Y $(SolutionDir)BluShell\bin\release\BluShell.exe $(SolutionDir)cookbooks\blu\files\default\BluShell.exe
 rem Copy /Y $(SolutionDir)BluShell\bin\release\BluShell.exe c:\blu\BluShell.exe</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
