@@ -2,11 +2,12 @@
 using System.ComponentModel;
 using System.Management.Automation;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
 using System.Security.Principal;
 
 namespace BluService
 {
-    
+
 
     /// <summary>
     /// Allows code to be executed under the security context of a specified user account.
@@ -36,6 +37,7 @@ namespace BluService
     ///
     ///  ...
     /// </remarks>
+    [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
     public class Impersonator : IDisposable
     {
 

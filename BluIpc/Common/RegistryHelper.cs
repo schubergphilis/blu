@@ -19,7 +19,7 @@ namespace BluIpc.Common
                 {
                     return (string)sk1.GetValue(keyName);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     return null;
                 }

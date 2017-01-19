@@ -24,32 +24,28 @@ namespace BluService
 
         public string ExecuteScriptBlock(string scriptBlock, PowerShellRunspace.UserData userData)
         {
-            return ExecuteScriptBlock(scriptBlock, userData, 1);
-        }
-
-        private string ExecuteScriptBlock(string scriptBlock, PowerShellRunspace.UserData userData, int attempt)
-        {
             var userDomainKey = userData.User + "::" + userData.Domain;
             if (!_runspaces.ContainsKey(userDomainKey))
             {
+                _runspaces[userDomainKey] = new PowerShellRunspace(userData);
+            }
+            try
+            {
+                return _runspaces[userDomainKey].ExecuteScriptBlock(scriptBlock);
+            }
+            catch (PowerShellRunspaceException err)
+            {
                 try
                 {
-                    _runspaces[userDomainKey] = new PowerShellRunspace(userData);
+                    _runspaces[userDomainKey].Dispose();
                 }
                 catch
                 {
-                    if (attempt < 3)
-                    {
-                        Thread.Sleep(500);
-                        ExecuteScriptBlock(scriptBlock, userData, ++attempt);
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    // no errors from here
                 }
+                _runspaces.Remove(userDomainKey);
+                return err.Message;
             }
-            return _runspaces[userDomainKey].ExecuteScriptBlock(scriptBlock);
         }
 
         public void Dispose()

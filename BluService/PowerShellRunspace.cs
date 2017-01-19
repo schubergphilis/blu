@@ -15,12 +15,14 @@ namespace BluService
         private Thread _runspaceThread;
         private Runspace _psRunspace;
         private Impersonator _impersonator = null;
-        private volatile string _scriptBlock = null;
-        private volatile string _lastResult = null;
-        private readonly object _scriptBlockLock = new object();
-        private readonly object _lastResultLock = new object();
+        private AutoResetEvent _executeEvent = new AutoResetEvent(false);
+        private AutoResetEvent _resultAvailableEvent = new AutoResetEvent(false);
+        private ManualResetEvent _runningEvent = new ManualResetEvent(false);
+        private string _result;
+        private string _scriptBlock;
+        private volatile bool _error = false;
 
-        public class UserData : IDisposable
+        public class UserData : EventArgs, IDisposable
         {
             public UserData(string userDataHeader)
             {
@@ -39,7 +41,7 @@ namespace BluService
                 }
                 else
                 {
-                    EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, "PowerShellRunspace.UserData: unable to parse: " + userDataHeader);
+                    EventLogHelper.WriteToEventLog(EventLogEntryType.Error, "PowerShellRunspace.UserData: unable to parse: " + userDataHeader);
                     throw new RuntimeException("Unable to parse userdata from: " + userDataHeader);
                 }
             }
@@ -69,38 +71,59 @@ namespace BluService
         {
             _runspaceThread = new Thread(Run)
             {
-                IsBackground = true
+                IsBackground = true,
+                Name = data == null ? "_default" : data.User + data.Domain
             };
             _runspaceThread.Start(data);
+            if (!_runningEvent.WaitOne(3000))
+            {
+                throw new PowerShellRunspaceException("Thread not started on time.");
+            }
         }
 
-        private void Run(object userData)
+        private void Run(object data)
         {
-            var data = userData as UserData;
-            if (data != null)
+            var uData = data as UserData;
+            if (uData != null)
             {
                 try
                 {
-                    _impersonator = new Impersonator(data.User, data.Domain, data.Password);
+                    Impersonate(uData);
                 }
-                finally
+                catch (Exception err)
                 {
-                    data.Dispose();
+                    _result = "Exit1:Error impersonating: " + err.Message;
+                    _resultAvailableEvent.Set();
+                    _error = true;
                 }
             }
-            _psRunspace = RunspaceFactory.CreateRunspace();
-            Open();
+            OpenRunspace();
+            _runningEvent.Set();
             try
             {
                 while (true)
                 {
-                    ExecuteScriptBlock();
-                    Thread.Sleep(50);
+                    _executeEvent.WaitOne();
+                    _result = ExecuteScriptBlock();
+                    _resultAvailableEvent.Set();
                 }
             }
             catch (ThreadInterruptedException)
             {
                 // ok, ending the loop.
+            }
+            _runningEvent.Reset();
+        }
+
+        private void Impersonate(UserData data)
+        {
+            try
+            {
+                _impersonator = new Impersonator(data.User, data.Domain, data.Password);
+            }
+            finally
+            {
+                data.Dispose();
             }
         }
 
@@ -113,55 +136,55 @@ namespace BluService
         }
 
 
-        private void Open()
+        private void OpenRunspace()
         {
             try
             {
+                _psRunspace = RunspaceFactory.CreateRunspace();
                 _psRunspace.Open();
             }
             catch (Exception ex)
             {
-                EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, "Error initializing runspace: " + ex.Message);
+                EventLogHelper.WriteToEventLog(EventLogEntryType.Error, "Error initializing runspace: " + ex.Message);
+                _result = "Exit1:Error opening runspace: " + ex.Message;
+                _resultAvailableEvent.Set();
+                _error = true;
             }
         }
 
         public string ExecuteScriptBlock(string scriptBlock)
         {
-            lock (_scriptBlockLock)
+            CheckError();
+            this._scriptBlock = scriptBlock;
+            if (!_executeEvent.Set())
             {
-                _scriptBlock = scriptBlock;
+                return "Exit1:Unable to execute script";
             }
-            while (_scriptBlock != null)
+            _resultAvailableEvent.WaitOne();
+            CheckError();
+            return _result;
+        }
+
+        private void CheckError()
+        {
+            if (_error)
             {
-                Thread.Sleep(0);
-            }
-            lock (_lastResultLock)
-            {
-                return _lastResult;
+                var message = "Runspace thread closed.";
+                if (_resultAvailableEvent.WaitOne(500))
+                {
+                    message = _result + " " + message;
+                }
+                throw new PowerShellRunspaceException(message);
             }
         }
 
-        private void ExecuteScriptBlock()
+        private string ExecuteScriptBlock()
         {
-            if (_scriptBlock == null)
+            if (_psRunspace == null)
             {
-                return;
+                OpenRunspace();
             }
-            lock (_scriptBlockLock)
-            {
-                if (_scriptBlock == null)
-                {
-                    return;
-                }
-                lock (_lastResultLock)
-                {
-                    ExecuteScriptBlockUnsafe();
-                }
-            }
-        }
 
-        private void ExecuteScriptBlockUnsafe()
-        {
             if (File.Exists(_scriptBlock) && _scriptBlock.EndsWith(".ps1"))
             {
                 string scriptFile = _scriptBlock;
@@ -171,8 +194,7 @@ namespace BluService
                 }
                 catch (Exception)
                 {
-                    ScriptResultUnsafe("Exit1:Cannot read: " + scriptFile);
-                    return;
+                    return "Exit1:Cannot read: " + scriptFile;
                 }
             }
 
@@ -184,17 +206,8 @@ namespace BluService
             catch (Exception ex)
             {
                 var output = "Error creating pipeline: " + ex.Message;
-                EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, output);
-                ScriptResultUnsafe("Exit1:" + output);
-                return;
-            }
-
-            // Dispose Runspace
-            if (_scriptBlock == "DisposeRunspace")
-            {
-                RefreshRunspace();
-                ScriptResultUnsafe("Exit0:");
-                return;
+                EventLogHelper.WriteToEventLog(EventLogEntryType.Error, output);
+                return "Exit1:" + output;
             }
 
             try
@@ -203,12 +216,11 @@ namespace BluService
                 var psObjects = pipeline.Invoke();
                 if (pipeline.Error.Count > 0)
                 {
-                    ProcessErrors(pipeline);
-                    return;
+                    return ProcessErrors(pipeline);
                 }
 
                 var result = ProcessResult(psObjects);
-                ScriptResultUnsafe("Exit0:" + result);
+                return "Exit0:" + result;
             }
             catch (Exception ex)
             {
@@ -216,8 +228,8 @@ namespace BluService
                          _scriptBlock.FormatForEventLog() +
                          "Reason:" + Environment.NewLine +
                          ex.Message;
-                EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, output);
-                ScriptResultUnsafe("Exit1:" + output);
+                EventLogHelper.WriteToEventLog(EventLogEntryType.Error, output);
+                return "Exit1:" + output;
             }
         }
 
@@ -225,7 +237,7 @@ namespace BluService
         {
             // Script block is actually a ps1 file, try to read it 
 
-            EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Information,
+            EventLogHelper.WriteToEventLog(EventLogEntryType.Information,
                 "Trying to read ps1 file: " + scriptFile);
             var content = File.ReadAllText(scriptFile)
                 .TrimStart(' ')
@@ -234,12 +246,12 @@ namespace BluService
                 .TrimEnd(' ')
                 .TrimEnd(Environment.NewLine.ToCharArray())
                 .TrimEnd('}');
-            EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Information,
+            EventLogHelper.WriteToEventLog(EventLogEntryType.Information,
                 "File content is: " + content);
             return content;
         }
 
-        private void ProcessErrors(Pipeline pipeline)
+        private string ProcessErrors(Pipeline pipeline)
         {
             var error = pipeline.Error.Read() as Collection<ErrorRecord>;
             if (error != null)
@@ -247,7 +259,7 @@ namespace BluService
                 var errors = string.Empty;
                 foreach (var er in error)
                 {
-                    EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Warning,
+                    EventLogHelper.WriteToEventLog(EventLogEntryType.Warning,
                         "Collecting error messages...");
                     try
                     {
@@ -277,10 +289,11 @@ namespace BluService
                                   "Executed and returned the following errors:" +
                                   Config.SeparatorLine + errors;
 
-                    EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, message);
-                    ScriptResultUnsafe("Exit1:" + errors);
+                    EventLogHelper.WriteToEventLog(EventLogEntryType.Error, message);
+                    return "Exit1:" + errors;
                 }
             }
+            return null;
         }
 
         private string ProcessResult(Collection<PSObject> psObjects)
@@ -317,24 +330,9 @@ namespace BluService
                     }
                     break;
             }
-            EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Information,
+            EventLogHelper.WriteToEventLog(EventLogEntryType.Information,
                 "Output: " + output.FormatForEventLog());
             return result.TrimEnd(Environment.NewLine.ToCharArray()).TrimEnd('\r', '\n');
-        }
-        
-        private void ScriptResultUnsafe(string message)
-        {
-            _lastResult = message;
-            _scriptBlock = null;
-        }
-
-        private void RefreshRunspace()
-        {
-            _psRunspace.Dispose();
-            _psRunspace = null;
-            _psRunspace = RunspaceFactory.CreateRunspace();
-            Open();
-            EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Warning, "PowerShell Runspace is disposed." + Environment.NewLine + "All previously definied PS objects are garbage collected.");
         }
 
         public void Dispose()
@@ -349,5 +347,11 @@ namespace BluService
                 _impersonator.Dispose();
             }
         }
+    }
+
+    public class PowerShellRunspaceException : Exception
+    {
+        public PowerShellRunspaceException(string message) : base(message) { }
+        public PowerShellRunspaceException(string message, Exception innerException) : base(message, innerException) { }
     }
 }
