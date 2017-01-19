@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO.Pipes;
+using System.Security.Principal;
 using System.Text;
 using BluIpc.Client;
 using BluIpc.Common;
@@ -11,6 +12,13 @@ namespace BluShell
     {
         static void Main(string[] args)
         {
+            if (!IsAdministrator())
+            {
+                Console.WriteLine("BluShell needs to be executed with administrator privilege.");
+                Environment.Exit(1);
+            }
+
+
             InputArguments inputArguments = new InputArguments(args);
             string scriptBlock = String.Empty;
             string credentials = inputArguments["-Credentials"];
@@ -58,9 +66,16 @@ namespace BluShell
             }
             catch (Exception ex)
             {
-                EventLogHelper.WriteToEventLog(Config.ShellName, EventLogEntryType.Error, "Exception in send/recieve script block: " + Environment.NewLine + ex.Message);
+                string message = "Error sending command to BluService: " + ex.Message +  Environment.NewLine + "Please verify that BluService is running with at least local administrator privilege.";
+                Console.WriteLine(message);
+                EventLogHelper.WriteToEventLog(Config.ShellName, EventLogEntryType.Error, message);
                 Environment.Exit(1);
             }
+        }
+
+        private static bool IsAdministrator()
+        {
+            return new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
         }
 
         private static void ExitHandler(string serverMessage)
