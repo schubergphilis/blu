@@ -36,7 +36,7 @@ namespace BluService
                 if (string.IsNullOrWhiteSpace(message))
                 {
                     var error = "Empty command received.";
-                    EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, error);
+                    EventLogHelper.WriteToEventLog(EventLogEntryType.Error, error);
                     var errorBytes = Encoding.UTF8.GetBytes(error);
                     pipe.Write(errorBytes, 0, errorBytes.Length);
                     pipe.Close();
@@ -54,7 +54,7 @@ namespace BluService
                         break;
                     default:
                         var error = "Unexpected number of message parts. Received " + messageParts.Length + " parts, expecting 1 or 2.";
-                        EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, error);
+                        EventLogHelper.WriteToEventLog(EventLogEntryType.Error, error);
                         var errorBytes = Encoding.UTF8.GetBytes(error);
                         pipe.Write(errorBytes, 0, errorBytes.Length);
                         pipe.Close();
@@ -64,7 +64,7 @@ namespace BluService
             }
             catch (Exception ex)
             {
-                EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, 
+                EventLogHelper.WriteToEventLog(EventLogEntryType.Error, 
                     "BluService: There was an error in reading script block as UTF8 string: " + Environment.NewLine + ex.Message);
             }
             
@@ -85,8 +85,10 @@ namespace BluService
             }
             catch (Exception ex)
             {
-                EventLogHelper.WriteToEventLog(Config.ServiceName, EventLogEntryType.Error, 
+                EventLogHelper.WriteToEventLog(EventLogEntryType.Error, 
                     "There is an error in executing script block UTF8 string: " + Environment.NewLine + ex.Message);
+                var errorBytes = Encoding.UTF8.GetBytes("Exit1:Error: " + ex.Message);
+                pipe.BeginWrite(errorBytes, 0, errorBytes.Length, OnAsyncWriteComplete, pipe);
                 pipe.Close();
             }
         }

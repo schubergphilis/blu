@@ -31,13 +31,9 @@ namespace BluShell
             {
                 scriptBlock = inputArguments["-Define"].TransformForBlu();
             }
-            else if (!string.IsNullOrEmpty(inputArguments["-Execute"]))
-            {
-                // TODO
-            }
             else
             {
-                Console.WriteLine("BluShell needs to be executed with -Command or -Define or -Execute parameters.");
+                Console.WriteLine("BluShell needs to be executed with -Command or -Define parameters.");
                 Environment.Exit(1);
             }
 
@@ -68,7 +64,7 @@ namespace BluShell
             {
                 string message = "Error sending command to BluService: " + ex.Message +  Environment.NewLine + "Please verify that BluService is running with at least local administrator privilege.";
                 Console.WriteLine(message);
-                EventLogHelper.WriteToEventLog(Config.ShellName, EventLogEntryType.Error, message);
+                EventLogHelper.WriteToEventLog(EventLogEntryType.Error, message);
                 Environment.Exit(1);
             }
         }
