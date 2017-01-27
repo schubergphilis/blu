@@ -214,13 +214,18 @@ namespace BluService
             {
                 pipeline.Commands.AddScript(_scriptBlock);
                 var psObjects = pipeline.Invoke();
+                var exit = 0;
+                if (psResultIsFalse(psObjects))
+                {
+                    exit = 1;
+                }
                 if (pipeline.Error.Count > 0)
                 {
                     return ProcessErrors(pipeline);
                 }
 
                 var result = ProcessResult(psObjects);
-                return "Exit0:" + result;
+                return "Exit" + exit + ":" + result;
             }
             catch (Exception ex)
             {
@@ -231,6 +236,11 @@ namespace BluService
                 EventLogHelper.WriteToEventLog(EventLogEntryType.Error, output);
                 return "Exit1:" + output;
             }
+        }
+
+        private static bool psResultIsFalse(Collection<PSObject> psObjects)
+        {
+            return psObjects.Count == 1 && psObjects[0].BaseObject is bool && (bool)psObjects[0].BaseObject == false;
         }
 
         private string LoadScriptFileIntoScriptBlock(string scriptFile)

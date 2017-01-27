@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO.Pipes;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using BluIpc.Client;
 using BluIpc.Common;
 
@@ -77,7 +78,8 @@ namespace BluShell
         private static void ExitHandler(string serverMessage)
         {
             Console.WriteLine(serverMessage.Substring(6));
-            Environment.Exit(serverMessage.StartsWith("Exit0:") ? 0 : 1);
+            var exitCode = serverMessage.StartsWith("Exit0:") ? 0 : 1;
+            Environment.Exit(exitCode);
         }
     }
 }
