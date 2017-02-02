@@ -19,7 +19,11 @@ namespace BluService
 
         public string ExecuteScriptBlock(string scriptBlock)
         {
-            return _runspaces[DefaultRunspace].ExecuteScriptBlock(scriptBlock);
+            if (!_runspaces.ContainsKey(DefaultRunspace))
+            {
+                _runspaces[DefaultRunspace] = new PowerShellRunspace();
+            }
+            return ExecuteScriptBlock(scriptBlock, DefaultRunspace);
         }
 
         public string ExecuteScriptBlock(string scriptBlock, PowerShellRunspace.UserData userData)
@@ -29,23 +33,38 @@ namespace BluService
             {
                 _runspaces[userDomainKey] = new PowerShellRunspace(userData);
             }
+            return ExecuteScriptBlock(scriptBlock, userDomainKey);
+        }
+
+        private string ExecuteScriptBlock(string scriptBlock, string runspace)
+        {
+            if (scriptBlock.Trim().ToLower() == "disposerunspace")
+            {
+                RemoveRunspace(runspace);
+                return "Runspace " + runspace + " cleared";
+            }
             try
             {
-                return _runspaces[userDomainKey].ExecuteScriptBlock(scriptBlock);
+                return _runspaces[runspace].ExecuteScriptBlock(scriptBlock);
             }
             catch (PowerShellRunspaceException err)
             {
-                try
-                {
-                    _runspaces[userDomainKey].Dispose();
-                }
-                catch
-                {
-                    // no errors from here
-                }
-                _runspaces.Remove(userDomainKey);
+                RemoveRunspace(runspace);
                 return err.Message;
             }
+        }
+
+        private void RemoveRunspace(string runspace)
+        {
+            try
+            {
+                _runspaces[runspace].Dispose();
+            }
+            catch
+            {
+                // no errors from here
+            }
+            _runspaces.Remove(runspace);
         }
 
         public void Dispose()
