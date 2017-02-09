@@ -4,10 +4,13 @@ namespace BluIpc.Common
 {
     public static class Config
     {
-        public static string ServiceName = "BluService";
-        public static string MagicSplitString = "-:#:#:#:-";
-        public static string ShellName = "BluShell";
-        public static string PipeName = "BluPowerShell";
+        public const string ServiceName = "BluService";
+        public const string ExecuteCommand = "exec";
+        public const string CreateRunspaceCommand = "create-runspace";
+        public const string DisposeRunspaceCommand = "dispose-runspace";
+        public const string MagicSplitString = "-:#:#:#:-";
+        public const string ShellName = "BluShell";
+        public const string PipeName = "BluPowerShell";
         public static string SeparatorLine = Environment.NewLine + 
                                              "------------------------------------------" +
                                              Environment.NewLine;
