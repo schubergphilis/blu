@@ -28,7 +28,7 @@ namespace BluService
 
         public void OnAsyncMessage(PipeStream pipe, byte[] data, int bytes, object state)
         {
-            string scriptBlock = string.Empty;
+            var scriptBlock = string.Empty;
             PowerShellRunspace.UserData userData = null;
             try
             {
@@ -42,7 +42,7 @@ namespace BluService
                     pipe.Close();
                     return;
                 }
-                var messageParts = message.Split(new[] {Config.MagicSplitString}, StringSplitOptions.None);
+                var messageParts = message.Split(new[] {Config.MagicSplitString}, StringSplitOptions.RemoveEmptyEntries);
                 switch (messageParts.Length)
                 {
                     case 1:
@@ -65,7 +65,7 @@ namespace BluService
             catch (Exception ex)
             {
                 EventLogHelper.WriteToEventLog(EventLogEntryType.Error, 
-                    "BluService: There was an error in reading script block as UTF8 string: " + Environment.NewLine + ex.Message);
+                    "BluService: There was an error in reading script block as UTF8 string: " + Environment.NewLine + ex);
             }
             
             try
@@ -86,8 +86,8 @@ namespace BluService
             catch (Exception ex)
             {
                 EventLogHelper.WriteToEventLog(EventLogEntryType.Error, 
-                    "There is an error in executing script block UTF8 string: " + Environment.NewLine + ex.Message);
-                var errorBytes = Encoding.UTF8.GetBytes("Exit1:Error: " + ex.Message);
+                    "There is an error in executing script block: " + scriptBlock + Environment.NewLine + ex);
+                var errorBytes = Encoding.UTF8.GetBytes("Exit1:ERROR executing Script:" + scriptBlock + Environment.NewLine + "Error: " + ex);
                 pipe.BeginWrite(errorBytes, 0, errorBytes.Length, OnAsyncWriteComplete, pipe);
                 pipe.Close();
             }
