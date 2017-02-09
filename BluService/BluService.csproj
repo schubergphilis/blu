@@ -41,11 +41,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Management.Automation.6.1.7601.17515\lib\net40\System.Management.Automation.dll</HintPath>
-      <Private>True</Private>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -83,30 +78,26 @@
     <Compile Include="BluService.Designer.cs">
       <DependentUpon>BluService.cs</DependentUpon>
     </Compile>
-    <Compile Include="Impersonator.cs" />
     <Compile Include="PowerShellRunspace.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PowerShellRunspaceManager.cs" />
+    <Compile Include="UserData.cs" />
+    <Compile Include="WindowStationAccess.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="backslash.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>net stop "Blu Powershell Runspace Service" 2&gt;nul 1&gt;nul
-EXIT 0</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>Copy /Y $(SolutionDir)BluService\bin\release\BluService.exe $(SolutionDir)Cookbooks\blu\files\default\BluService.exe
-Copy /Y $(SolutionDir)BluService\bin\release\BluService.exe c:\blu\BluService.exe
-net start "Blu Powershell Runspace Service" 2&gt;nul 1&gt;nul
-EXIT 0
-rem EXIT 0</PostBuildEvent>
+    <PostBuildEvent>Copy /Y $(TargetDir)BluService.exe c:\blu\BluService.exe</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
