@@ -152,10 +152,10 @@ namespace BluService
             }
         }
 
-        public string ExecuteScriptBlock(string scriptBlock)
+        public string ExecuteScript(string scriptFile)
         {
             CheckError();
-            this._scriptBlock = scriptBlock;
+            this._scriptBlock = LoadScriptFileIntoScriptBlock(scriptFile);
             if (!_executeEvent.Set())
             {
                 return "Exit1:Unable to execute script";
@@ -163,6 +163,18 @@ namespace BluService
             _resultAvailableEvent.WaitOne();
             CheckError();
             return _result;
+        }
+
+        private static string LoadScriptFileIntoScriptBlock(string scriptFile)
+        {
+            EventLogHelper.WriteToEventLog(EventLogEntryType.Information, "Trying to read ps1 file: " + scriptFile);
+            var content = File.ReadAllText(scriptFile)
+                .TrimStart(' ')
+                .TrimStart(Environment.NewLine.ToCharArray())
+                .TrimEnd(' ')
+                .TrimEnd(Environment.NewLine.ToCharArray());
+            EventLogHelper.WriteToEventLog(EventLogEntryType.Information, "File content is: " + content);
+            return content;
         }
 
         private void CheckError()
@@ -185,19 +197,6 @@ namespace BluService
                 OpenRunspace();
             }
 
-            if (File.Exists(_scriptBlock) && _scriptBlock.EndsWith(".ps1"))
-            {
-                string scriptFile = _scriptBlock;
-                try
-                {
-                    _scriptBlock = LoadScriptFileIntoScriptBlock(scriptFile);
-                }
-                catch (Exception)
-                {
-                    return "Exit1:Cannot read: " + scriptFile;
-                }
-            }
-
             Pipeline pipeline;
             try
             {
@@ -215,7 +214,7 @@ namespace BluService
                 pipeline.Commands.AddScript(_scriptBlock);
                 var psObjects = pipeline.Invoke();
                 var exit = 0;
-                if (psResultIsFalse(psObjects))
+                if (PsResultIsFalse(psObjects))
                 {
                     exit = 1;
                 }
@@ -238,36 +237,19 @@ namespace BluService
             }
         }
 
-        private static bool psResultIsFalse(Collection<PSObject> psObjects)
+        private static bool PsResultIsFalse(Collection<PSObject> psObjects)
         {
             return psObjects.Count == 1 && psObjects[0].BaseObject is bool && (bool)psObjects[0].BaseObject == false;
         }
 
-        private string LoadScriptFileIntoScriptBlock(string scriptFile)
-        {
-            // Script block is actually a ps1 file, try to read it 
-
-            EventLogHelper.WriteToEventLog(EventLogEntryType.Information,
-                "Trying to read ps1 file: " + scriptFile);
-            var content = File.ReadAllText(scriptFile)
-                .TrimStart(' ')
-                .TrimStart(Environment.NewLine.ToCharArray())
-                .TrimStart('{')
-                .TrimEnd(' ')
-                .TrimEnd(Environment.NewLine.ToCharArray())
-                .TrimEnd('}');
-            EventLogHelper.WriteToEventLog(EventLogEntryType.Information,
-                "File content is: " + content);
-            return content;
-        }
-
         private string ProcessErrors(Pipeline pipeline)
         {
-            var error = pipeline.Error.Read() as Collection<ErrorRecord>;
-            if (error != null)
+            var errorObject = pipeline.Error.Read();
+            var errorRecords = errorObject as Collection<ErrorRecord>;
+            if (errorRecords != null)
             {
                 var errors = string.Empty;
-                foreach (var er in error)
+                foreach (var er in errorRecords)
                 {
                     EventLogHelper.WriteToEventLog(EventLogEntryType.Warning,
                         "Collecting error messages...");
@@ -300,10 +282,10 @@ namespace BluService
                                   Config.SeparatorLine + errors;
 
                     EventLogHelper.WriteToEventLog(EventLogEntryType.Error, message);
-                    return "Exit1:" + errors;
+                    return "Exit1:" + message;
                 }
             }
-            return null;
+            return "Exit1:Errors executing, errorObject: " + errorObject;
         }
 
         private string ProcessResult(Collection<PSObject> psObjects)
