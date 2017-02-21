@@ -28,8 +28,6 @@ namespace BluService
 
         public void OnAsyncMessage(PipeStream pipe, byte[] data, int bytes, object state)
         {
-            var scriptBlock = string.Empty;
-            PowerShellRunspace.UserData userData = null;
             string message = null;
             try
             {
@@ -65,8 +63,8 @@ namespace BluService
             catch (Exception ex)
             {
                 EventLogHelper.WriteToEventLog(EventLogEntryType.Error, 
-                    "There is an error in executing script block: " + scriptBlock + Environment.NewLine + ex);
-                var errorBytes = Encoding.UTF8.GetBytes("Exit1:ERROR executing Script:" + scriptBlock + Environment.NewLine + "Error: " + ex);
+                    "There is an error in executing: " + message + Environment.NewLine + ex);
+                var errorBytes = Encoding.UTF8.GetBytes("Exit1:ERROR executing:" + message + Environment.NewLine + "Error: " + ex);
                 pipe.BeginWrite(errorBytes, 0, errorBytes.Length, OnAsyncWriteComplete, pipe);
                 pipe.Close();
             }
