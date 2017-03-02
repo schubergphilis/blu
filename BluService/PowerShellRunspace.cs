@@ -67,7 +67,7 @@ namespace BluService
                 return "Exit1:runspace has exited, dispose and recreate";
             }
             _runspaceConsole.StandardInput.WriteLine(scriptFile);
-            if (!_eventWaitHandle.WaitOne(300000))
+            if (!_eventWaitHandle.WaitOne(TimeSpan.FromHours(4)))
             {
                 return "Exit1:runspace timeout";
             }
