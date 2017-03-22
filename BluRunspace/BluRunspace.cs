@@ -97,7 +97,7 @@ namespace BluRunspace
                 var output = "Exception Invoking script block: " +
                          scriptBlock.FormatForEventLog() +
                          "Reason:" + Environment.NewLine +
-                         ex.Message;
+                         ex;
                 EventLogHelper.WriteToEventLog(EventLogEntryType.Error, output);
                 return "Exit1:" + output;
             }
@@ -158,39 +158,50 @@ namespace BluRunspace
         {
             var output = "Execution of Script Block: " + scriptBlock.FormatForEventLog();
             var result = string.Empty;
-            switch (psObjects.Count)
+            try
             {
-                case 0:
-                    output += "Is completed successfully and returned null." + Environment.NewLine;
-                    break;
-
-                case 1:
-                    // Accept null as a valid osObject and BaseObject, so return null
-                    if (psObjects[0] == null || psObjects[0].BaseObject == null)
-                    {
+                switch (psObjects.Count)
+                {
+                    case 0:
                         output += "Is completed successfully and returned null." + Environment.NewLine;
-                    }
-                    else
-                    {
-                        output += "Is completed successfully and returned:" + Environment.NewLine;
-                        output += psObjects[0].BaseObject.ToString();
-                        result += psObjects[0].BaseObject;
-                    }
-                    break;
+                        break;
 
-                default:
-                    output += "Is completed successfully and returned:" + Environment.NewLine +
-                              Environment.NewLine;
-                    foreach (var pso in psObjects)
-                    {
-                        output += pso.BaseObject + Environment.NewLine;
-                        result += pso.BaseObject + Environment.NewLine;
-                    }
-                    break;
+                    case 1:
+                        // Accept null as a valid osObject and BaseObject, so return null
+                        if (psObjects[0] == null || psObjects[0].BaseObject == null)
+                        {
+                            output += "Is completed successfully and returned null." + Environment.NewLine;
+                        }
+                        else
+                        {
+                            output += "Is completed successfully and returned:" + Environment.NewLine;
+                            output += psObjects[0].BaseObject.ToString();
+                            result += psObjects[0].BaseObject;
+                        }
+                        break;
+
+                    default:
+                        output += "Is completed successfully and returned:" + Environment.NewLine +
+                                  Environment.NewLine;
+                        foreach (var pso in psObjects)
+                        {
+                            if (pso == null || pso.BaseObject == null)
+                            {
+                                continue;
+                            }
+                            output += pso.BaseObject + Environment.NewLine;
+                            result += pso.BaseObject + Environment.NewLine;
+                        }
+                        break;
+                }
+                EventLogHelper.WriteToEventLog(EventLogEntryType.Information,
+                    "Output: " + output.FormatForEventLog());
+                return result.TrimEnd(Environment.NewLine.ToCharArray()).TrimEnd('\r', '\n');
             }
-            EventLogHelper.WriteToEventLog(EventLogEntryType.Information,
-                "Output: " + output.FormatForEventLog());
-            return result.TrimEnd(Environment.NewLine.ToCharArray()).TrimEnd('\r', '\n');
+            catch (Exception err)
+            {
+                return "Command successful, but error while processing result, please report to blu guru: " + err;
+            }
         }
 
         public void Dispose()
