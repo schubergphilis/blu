@@ -77,6 +77,8 @@ namespace BluRunspace
 
             try
             {
+                pipeline.Commands.AddScript("function write-host($out) {write-output $out}");
+                pipeline.Commands.AddScript("function write-verbose($out) {write-output $out}");
                 pipeline.Commands.AddScript(scriptBlock);
                 var psObjects = pipeline.Invoke();
                 var exit = 0;
