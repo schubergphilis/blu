@@ -61,6 +61,7 @@
     <Compile Include="..\BluIpc\Common\StringHelper.cs">
       <Link>BluIpc\Common\StringHelper.cs</Link>
     </Compile>
+    <Compile Include="BluPSHost.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BluRunspace.cs" />
@@ -75,6 +76,8 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>Copy /Y $(TargetDir)BluRunspace.exe c:\blu\BluRunspace.exe
+Copy /Y $(TargetDir)BluRunspace.exe c:\blu\BluRunspace.exe.pdb
+
 Copy /Y $(TargetDir)System.Management.Automation.dll c:\blu\System.Management.Automation.dll
 if not exist "C:\blu\temp-scripts" mkdir C:\blu\temp-scripts</PostBuildEvent>
   </PropertyGroup>

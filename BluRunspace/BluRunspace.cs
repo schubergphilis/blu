@@ -9,18 +9,21 @@ using System.Management.Automation.Runspaces;
 using System.Text;
 using System.Threading;
 using BluIpc.Common;
+using System.Management.Automation.Host;
 
 namespace BluRunspace
 {
     class BluRunspace: IDisposable
     {
         private Runspace _psRunspace;
+        private BluPsHost _host;
 
         private void OpenRunspace()
         {
             try
             {
-                _psRunspace = RunspaceFactory.CreateRunspace();
+                _host = new BluPsHost();
+                _psRunspace = RunspaceFactory.CreateRunspace(_host);
                 _psRunspace.Open();
             }
             catch (Exception ex)
@@ -77,8 +80,6 @@ namespace BluRunspace
 
             try
             {
-                pipeline.Commands.AddScript("function write-host($out) {write-output $out}");
-                pipeline.Commands.AddScript("function write-verbose($out) {write-output $out}");
                 pipeline.Commands.AddScript(scriptBlock);
                 var psObjects = pipeline.Invoke();
                 var exit = 0;
@@ -88,15 +89,15 @@ namespace BluRunspace
                 }
                 if (pipeline.Error.Count > 0)
                 {
-                    return ProcessErrors(pipeline, scriptBlock);
+                    return "Exit1:" + _host.GetAndClearOutput() + ProcessErrors(pipeline, scriptBlock);
                 }
 
                 var result = ProcessResult(psObjects, scriptBlock);
-                return "Exit" + exit + ":" + result;
+                return "Exit" +  exit + ":" + _host.GetAndClearOutput() + result;
             }
             catch (Exception ex)
             {
-                var output = "Exception Invoking script block: " +
+                var output = _host.GetAndClearOutput()  + "Exception Invoking script block: " +
                          scriptBlock.FormatForEventLog() +
                          "Reason:" + Environment.NewLine +
                          ex;
@@ -153,7 +154,7 @@ namespace BluRunspace
                     return "Exit1:" + message;
                 }
             }
-            return "Exit1:Errors executing, errorObject: " + errorObject;
+            return "Errors executing, errorObject: " + errorObject;
         }
 
         private string ProcessResult(Collection<PSObject> psObjects, string scriptBlock)
