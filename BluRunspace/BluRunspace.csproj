@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D94BA419-C456-481F-BBE0-3CFEBC077BE0}</ProjectGuid>
+    <ProjectGuid>{4C9A4602-505A-4755-B3E9-AA73A2CD3979}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BluShell</RootNamespace>
-    <AssemblyName>BluShell</AssemblyName>
+    <RootNamespace>BluRunspace</RootNamespace>
+    <AssemblyName>BluRunspace</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -36,13 +36,12 @@
     <ApplicationIcon>backslash.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommandLine, Version=2.0.275.0, Culture=neutral, PublicKeyToken=de6f01bd326f8c32, processorArchitecture=MSIL">
-      <HintPath>..\packages\CommandLineParser.2.1.1-beta\lib\net40\CommandLine.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
+    <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Management.Automation.6.1.7601.17515\lib\net40\System.Management.Automation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -50,12 +49,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\BluIpc\Client\IpcClient.cs">
-      <Link>BluIpc\Client\IpcClient.cs</Link>
-    </Compile>
-    <Compile Include="..\BluIpc\Client\IpcPipeData.cs">
-      <Link>BluIpc\Client\IpcPipeData.cs</Link>
-    </Compile>
     <Compile Include="..\BluIpc\Common\Config.cs">
       <Link>BluIpc\Common\Config.cs</Link>
     </Compile>
@@ -68,10 +61,10 @@
     <Compile Include="..\BluIpc\Common\StringHelper.cs">
       <Link>BluIpc\Common\StringHelper.cs</Link>
     </Compile>
-    <Compile Include="RunspaceOptions.cs" />
-    <Compile Include="ExecuteOptions.cs" />
+    <Compile Include="BluPSHost.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BluRunspace.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -82,14 +75,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>Copy /Y $(TargetDir)BluShell.exe c:\blu\BluShell.exe
-Copy /Y $(TargetDir)CommandLine.dll c:\blu\CommandLine.dll</PostBuildEvent>
+    <PostBuildEvent>Copy /Y $(TargetDir)BluRunspace.exe c:\blu\BluRunspace.exe
+Copy /Y $(TargetDir)BluRunspace.exe c:\blu\BluRunspace.exe.pdb
+
+Copy /Y $(TargetDir)System.Management.Automation.dll c:\blu\System.Management.Automation.dll
+if not exist "C:\blu\temp-scripts" mkdir C:\blu\temp-scripts</PostBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
