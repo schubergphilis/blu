@@ -26,10 +26,10 @@ default['blu']['install_blu_service'] = true
 # Determines if powershell.exe should be placed in embedded directory (overriding powershell.exe for Chef client)
 default['blu']['override_powershell'] = false
 
-# Determines if blu station is installed and sprint is run (Please reffer to blu documentation) 
-default['blu']['install_blu_station'] = false
-default['blu']['sprint'] = false
-
 # Service account
-default['blu']['serviceaccount'] = ''
-default['blu']['serviceaccount_pw'] = ''
+default['blu']['service_account'] = {
+    user: 'blu',
+    user_group: 'Administrators',
+    create_local_user: true,
+    data_bag_name: 'blu' # expecting a password for the mentioned user in the "credentials" sub data bag
+}

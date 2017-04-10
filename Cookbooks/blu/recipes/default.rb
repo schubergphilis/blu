@@ -25,6 +25,18 @@ directory node['blu']['root'] do
   action :create
 end
 
-if node['blu']['install_blu_service'] == true 
-  include_recipe "blu::service"
+directory File.join(node['blu']['root'], 'temp-scripts') do
+  recursive true
+  action :create
+end
+
+# Add to path
+env "path" do
+  delim ";"
+  value node['blu']['root']
+  action :modify
+end
+
+if node['blu']['install_blu_service']
+  include_recipe 'blu::service'
 end
