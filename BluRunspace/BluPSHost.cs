@@ -39,7 +39,7 @@ namespace BluRunspace
         }
 
         public override string Name { get; } = "BluPSHost";
-        public override Version Version { get; } = new Version(1,0,0);
+        public override Version Version { get; } = new Version(4, 0, 0);
         public override Guid InstanceId { get; } = Guid.NewGuid();
         public override PSHostUserInterface UI { get; } = new BluPsHostUserInterface();
         public override CultureInfo CurrentCulture { get; } = Thread.CurrentThread.CurrentCulture;
@@ -47,7 +47,7 @@ namespace BluRunspace
 
         public string GetAndClearOutput()
         {
-            return ((BluPsHostUserInterface) UI).GetAndClearHostOutput();
+            return ((BluPsHostUserInterface)UI).GetAndClearHostOutput();
         }
     }
 
@@ -57,7 +57,7 @@ namespace BluRunspace
 
         public string GetAndClearHostOutput()
         {
-            var retVal= _outputCache.ToString();
+            var retVal = _outputCache.ToString();
             _outputCache.Clear();
             return retVal;
         }
@@ -84,7 +84,7 @@ namespace BluRunspace
                 {
                     if (key.Key == ConsoleKey.Backspace && pass.Length > 0)
                     {
-                        pass.RemoveAt(pass.Length-1);
+                        pass.RemoveAt(pass.Length - 1);
                         Console.Write("\b \b");
                     }
                 }
@@ -153,6 +153,81 @@ namespace BluRunspace
             throw new NotImplementedException();
         }
 
-        public override PSHostRawUserInterface RawUI => null;
+
+        public override PSHostRawUserInterface RawUI { get; } = new BluPsRawUiInterface();
+
+    }
+
+    internal class BluPsRawUiInterface : PSHostRawUserInterface
+    {
+        private ConsoleColor _foreground = ConsoleColor.White;
+        public override ConsoleColor ForegroundColor
+        {
+            get
+            {
+                return _foreground;
+            }
+            set
+            {
+                _foreground = value;
+            }
+        }
+
+        private ConsoleColor _background = ConsoleColor.Black;
+        public override ConsoleColor BackgroundColor
+        {
+            get
+            {
+                return _background;
+            }
+            set
+            {
+                _background = value;
+            }
+        }
+
+        public override Coordinates CursorPosition { get => new Coordinates(0,0); set { } }
+        public override Coordinates WindowPosition { get => new Coordinates(0,0); set { } }
+        public override int CursorSize { get => 1; set { } }
+        public override Size BufferSize { get => new Size(80, 1000); set { } }
+        public override Size WindowSize { get => new Size(80, 100); set { } }
+
+        public override Size MaxWindowSize => new Size(80, 100);
+
+        public override Size MaxPhysicalWindowSize => new Size(80, 100);
+
+        public override bool KeyAvailable => false;
+
+        public override string WindowTitle { get => "virtual PS host"; set { } }
+
+        public override void FlushInputBuffer()
+        {
+            return;
+        }
+
+        public override BufferCell[,] GetBufferContents(Rectangle rectangle)
+        {
+            return null;
+        }
+
+        public override KeyInfo ReadKey(ReadKeyOptions options)
+        {
+            return new KeyInfo();
+        }
+
+        public override void ScrollBufferContents(Rectangle source, Coordinates destination, Rectangle clip, BufferCell fill)
+        {
+            return;
+        }
+
+        public override void SetBufferContents(Coordinates origin, BufferCell[,] contents)
+        {
+            return;
+        }
+
+        public override void SetBufferContents(Rectangle rectangle, BufferCell fill)
+        {
+            return;
+        }
     }
 }
