@@ -56,18 +56,6 @@
     <Compile Include="..\BluIpc\Client\IpcPipeData.cs">
       <Link>BluIpc\Client\IpcPipeData.cs</Link>
     </Compile>
-    <Compile Include="..\BluIpc\Common\Config.cs">
-      <Link>BluIpc\Common\Config.cs</Link>
-    </Compile>
-    <Compile Include="..\BluIpc\Common\EventLogHelper.cs">
-      <Link>BluIpc\Common\EventLogHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\BluIpc\Common\RegistryHelper.cs">
-      <Link>BluIpc\Common\RegistryHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\BluIpc\Common\StringHelper.cs">
-      <Link>BluIpc\Common\StringHelper.cs</Link>
-    </Compile>
     <Compile Include="RunspaceOptions.cs" />
     <Compile Include="ExecuteOptions.cs" />
     <Compile Include="Program.cs" />

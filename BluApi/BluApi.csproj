@@ -90,8 +90,6 @@
     <Compile Include="Common\KeyHelper.cs" />
     <Compile Include="Common\Logger.cs" />
     <Compile Include="Common\RegistryHelper.cs" />
-    <Compile Include="Common\RubyHelper.cs" />
-    <Compile Include="Common\StringHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

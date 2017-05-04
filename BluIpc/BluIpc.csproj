@@ -41,10 +41,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\IpcPipeData.cs" />
-    <Compile Include="Common\Config.cs" />
-    <Compile Include="Common\EventLogHelper.cs" />
-    <Compile Include="Common\RegistryHelper.cs" />
-    <Compile Include="Common\StringHelper.cs" />
     <Compile Include="Server\IIpcCallback.cs" />
     <Compile Include="Client\IpcClient.cs" />
     <Compile Include="Server\IpcPipeData.cs" />

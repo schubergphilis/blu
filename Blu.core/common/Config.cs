@@ -13,7 +13,7 @@ namespace Blu.core.common
         public const string MagicSplitString = "-:#:#:#:-";
         public const string ShellName = "BluShell";
         public const string PipeName = "BluPowerShell";
-        public static string SeparatorLine = Environment.NewLine + 
+        public static string SeparatorLine = Environment.NewLine +
                                              "------------------------------------------" +
                                              Environment.NewLine;
 

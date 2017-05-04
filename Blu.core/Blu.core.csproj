@@ -41,18 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\BluIpc\Common\Config.cs">
-      <Link>common\Config.cs</Link>
-    </Compile>
-    <Compile Include="..\BluIpc\Common\EventLogHelper.cs">
-      <Link>common\EventLogHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\BluIpc\Common\RegistryHelper.cs">
-      <Link>common\RegistryHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\BluIpc\Common\StringHelper.cs">
-      <Link>common\StringHelper.cs</Link>
-    </Compile>
+    <Compile Include="common\Config.cs" />
+    <Compile Include="common\EventLogHelper.cs" />
+    <Compile Include="common\RegistryHelper.cs" />
+    <Compile Include="common\StringHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
