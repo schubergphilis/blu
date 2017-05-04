@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using BluIpc.Common;
+
+using Blu.core.common;
 
 namespace BluService
 {
