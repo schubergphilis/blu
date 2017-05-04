@@ -6,7 +6,8 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.OpenSsl;
-using BluApi.Common;
+
+using Blu.core.common;
 
 namespace BluApi.Chef.ChefAPI
 {
