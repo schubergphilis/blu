@@ -61,6 +61,12 @@
   <ItemGroup>
     <Content Include="backslash.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Blu.core\Blu.core.csproj">
+      <Project>{a53fd336-7e4f-40c1-b75e-a3a252e3c9b4}</Project>
+      <Name>Blu.core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>Copy /Y $(TargetDir)BluRunspace.exe c:\blu\BluRunspace.exe

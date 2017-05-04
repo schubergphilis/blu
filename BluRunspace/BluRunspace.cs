@@ -8,8 +8,10 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Text;
 using System.Threading;
-using BluIpc.Common;
 using System.Management.Automation.Host;
+
+using Blu.core.common;
+
 
 namespace BluRunspace
 {

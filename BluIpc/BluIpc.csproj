@@ -47,7 +47,12 @@
     <Compile Include="Server\IpcService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Blu.core\Blu.core.csproj">
+      <Project>{a53fd336-7e4f-40c1-b75e-a3a252e3c9b4}</Project>
+      <Name>Blu.core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
