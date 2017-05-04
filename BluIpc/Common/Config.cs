@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace BluIpc.Common
+namespace Blu.core.common
 {
     public static class Config
     {

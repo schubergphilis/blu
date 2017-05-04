@@ -186,11 +186,19 @@ namespace BluRunspace
             }
         }
 
-        public override Coordinates CursorPosition { get => new Coordinates(0,0); set { } }
-        public override Coordinates WindowPosition { get => new Coordinates(0,0); set { } }
-        public override int CursorSize { get => 1; set { } }
-        public override Size BufferSize { get => new Size(80, 1000); set { } }
-        public override Size WindowSize { get => new Size(80, 100); set { } }
+        public override Coordinates CursorPosition { get {return new Coordinates(0,0);} set { } }
+
+        public override Coordinates WindowPosition {
+            get { return new Coordinates(0, 0); }
+            set { } }
+
+        public override int CursorSize { get { return 1; } set { } }
+
+        public override Size BufferSize {
+            get { return new Size(80, 1000); }
+            set { } }
+
+        public override Size WindowSize { get { return new Size(80, 100); } set { } }
 
         public override Size MaxWindowSize => new Size(80, 100);
 
@@ -198,7 +206,7 @@ namespace BluRunspace
 
         public override bool KeyAvailable => false;
 
-        public override string WindowTitle { get => "virtual PS host"; set { } }
+        public override string WindowTitle { get {return "virtual PS host";} set { } }
 
         public override void FlushInputBuffer()
         {

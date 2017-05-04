@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Win32;
 
-namespace BluIpc.Common
+namespace Blu.core.common
 {
        public static class RegistryUtil
         {

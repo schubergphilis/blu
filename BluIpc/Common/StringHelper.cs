@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace BluIpc.Common
+namespace Blu.core.common
 {
     public static class StringExt
     {

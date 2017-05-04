@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace BluIpc.Common
+namespace Blu.core.common
 {
     public static class EventLogHelper
     {
