@@ -90,8 +90,6 @@
     <Compile Include="Common\KeyHelper.cs" />
     <Compile Include="Common\Logger.cs" />
     <Compile Include="Common\RegistryHelper.cs" />
-    <Compile Include="Common\RubyHelper.cs" />
-    <Compile Include="Common\StringHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -101,6 +99,12 @@
     <None Include="app.config" />
     <None Include="BluApi.cd" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Blu.core\Blu.core.csproj">
+      <Project>{a53fd336-7e4f-40c1-b75e-a3a252e3c9b4}</Project>
+      <Name>Blu.core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

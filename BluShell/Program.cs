@@ -7,7 +7,8 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using BluIpc.Client;
-using BluIpc.Common;
+using Blu.core.common;
+
 using CommandLine;
 using CommandLine.Text;
 

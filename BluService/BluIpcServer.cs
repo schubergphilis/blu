@@ -4,8 +4,9 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using BluIpc.Common;
+
 using BluIpc.Server;
+using Blu.core.common;
 
 namespace BluService
 {

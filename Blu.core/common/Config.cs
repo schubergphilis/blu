@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 
-namespace BluIpc.Common
+namespace Blu.core.common
 {
     public static class Config
     {
@@ -14,7 +13,7 @@ namespace BluIpc.Common
         public const string MagicSplitString = "-:#:#:#:-";
         public const string ShellName = "BluShell";
         public const string PipeName = "BluPowerShell";
-        public static string SeparatorLine = Environment.NewLine + 
+        public static string SeparatorLine = Environment.NewLine +
                                              "------------------------------------------" +
                                              Environment.NewLine;
 

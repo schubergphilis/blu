@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.ServiceProcess;
 using BluIpc.Server;
-using BluIpc.Common;
+using Blu.core.common;
 
 namespace BluService
 {

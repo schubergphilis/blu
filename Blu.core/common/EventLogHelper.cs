@@ -1,13 +1,12 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
-namespace BluIpc.Common
-{
+namespace Blu.core.common
+{ 
     public static class EventLogHelper
     {
         static object eloglock = new object();
         static EventLog elog = new EventLog { Source = Config.ServiceName };
-        
+
         public static void WriteToEventLog(EventLogEntryType type, string message)
         {
             lock (eloglock)
@@ -35,4 +34,3 @@ namespace BluIpc.Common
         }
     }
 }
-

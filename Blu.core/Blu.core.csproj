@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{70C8D977-3121-426C-A1A7-93BCACC40B20}</ProjectGuid>
+    <ProjectGuid>{A53FD336-7E4F-40C1-B75E-A3A252E3C9B4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BluIpc</RootNamespace>
-    <AssemblyName>BluIpc</AssemblyName>
+    <RootNamespace>Blu.core</RootNamespace>
+    <AssemblyName>Blu.core</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -33,6 +33,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -40,19 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client\IpcPipeData.cs" />
-    <Compile Include="Server\IIpcCallback.cs" />
-    <Compile Include="Client\IpcClient.cs" />
-    <Compile Include="Server\IpcPipeData.cs" />
-    <Compile Include="Server\IpcService.cs" />
+    <Compile Include="common\Config.cs" />
+    <Compile Include="common\EventLogHelper.cs" />
+    <Compile Include="common\RegistryHelper.cs" />
+    <Compile Include="common\StringHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Blu.core\Blu.core.csproj">
-      <Project>{a53fd336-7e4f-40c1-b75e-a3a252e3c9b4}</Project>
-      <Name>Blu.core</Name>
-    </ProjectReference>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

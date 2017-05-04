@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Security;
-using BluIpc.Common;
+
+using Blu.core.common;
 
 namespace BluService
 {

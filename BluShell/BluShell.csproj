@@ -56,18 +56,6 @@
     <Compile Include="..\BluIpc\Client\IpcPipeData.cs">
       <Link>BluIpc\Client\IpcPipeData.cs</Link>
     </Compile>
-    <Compile Include="..\BluIpc\Common\Config.cs">
-      <Link>BluIpc\Common\Config.cs</Link>
-    </Compile>
-    <Compile Include="..\BluIpc\Common\EventLogHelper.cs">
-      <Link>BluIpc\Common\EventLogHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\BluIpc\Common\RegistryHelper.cs">
-      <Link>BluIpc\Common\RegistryHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\BluIpc\Common\StringHelper.cs">
-      <Link>BluIpc\Common\StringHelper.cs</Link>
-    </Compile>
     <Compile Include="RunspaceOptions.cs" />
     <Compile Include="ExecuteOptions.cs" />
     <Compile Include="Program.cs" />
@@ -79,6 +67,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="backslash.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Blu.core\Blu.core.csproj">
+      <Project>{a53fd336-7e4f-40c1-b75e-a3a252e3c9b4}</Project>
+      <Name>Blu.core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -5,7 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using BluIpc.Common;
+
+using Blu.core.common;
 
 namespace BluRunspace
 {
