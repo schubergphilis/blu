@@ -45,6 +45,7 @@ namespace BluService
                 startInfo.UserName = data.User;
                 startInfo.Password = data.Password;
                 startInfo.Domain = data.Domain;
+                startInfo.LoadUserProfile = true;
             }
             _runspaceConsole = new Process { StartInfo = startInfo };
             _runspaceConsole.OutputDataReceived += (sender, args) => { _dataReceived += args.Data + Environment.NewLine; };
