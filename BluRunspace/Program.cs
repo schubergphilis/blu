@@ -40,7 +40,9 @@ namespace BluRunspace
                     }
                     try
                     {
-                        Console.WriteLine(_runspace.RunScript(input));
+                        var result = _runspace.RunScript(input);
+                        
+                        Console.WriteLine(result);
                     }
                     catch (Exception err)
                     {

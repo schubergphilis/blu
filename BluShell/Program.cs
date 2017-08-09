@@ -72,7 +72,7 @@ namespace BluShell
             {
                 scriptFile += "-" + runspace;
             }
-            scriptFile = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+            scriptFile += DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
             scriptFile += "-" + Guid.NewGuid().ToString("N").Substring(5, 4);
             scriptFile += ".ps1";
             var fullName = Path.Combine(Config.TempPath, scriptFile);
@@ -111,10 +111,22 @@ namespace BluShell
                 var bytes = Encoding.UTF8.GetBytes(pipeCommand);
                 pipe.Write(bytes, 0, bytes.Length);
 
-                // Read the result
-                var data = new Byte[IpcClient.ClientInBufferSize];
-                var bytesRead = pipe.Read(data, 0, data.Length);
-                return ExitHandler(Encoding.UTF8.GetString(data, 0, bytesRead));
+                //TODO: If Exit0: or Exit1: never comes this spins out of controlllllllllllllllll..........
+                while (true)
+                {
+                    // Read the result
+                    var data = new Byte[IpcClient.ClientInBufferSize];
+                    var bytesRead = pipe.Read(data, 0, data.Length);
+                    var message = Encoding.UTF8.GetString(data, 0, bytesRead);
+                    if (message.StartsWith("Exit0:") || message.StartsWith("Exit1:"))
+                    {
+                        return ExitHandler(message);
+                    }
+                    else
+                    {
+                        Console.WriteLine(message);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -126,10 +138,7 @@ namespace BluShell
             }
             finally
             {
-                if (pipe != null)
-                {
-                    pipe.Close();
-                }
+                pipe?.Close();
             }
         }
 
@@ -140,9 +149,13 @@ namespace BluShell
 
         private static int ExitHandler(string serverMessage)
         {
-            Console.WriteLine(serverMessage.Substring(6));
-            var exitCode = serverMessage.StartsWith("Exit0:") ? 0 : 1;
-            return exitCode;
+            if (serverMessage?.Length > 6)
+            {
+                Console.WriteLine(serverMessage.Substring(6));
+                var exitCode = serverMessage.StartsWith("Exit0:") ? 0 : 1;
+                return exitCode;
+            }
+            return 1;
         }
     }
 }

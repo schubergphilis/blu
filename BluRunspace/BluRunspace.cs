@@ -1,30 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
-using System.Text;
 using System.Threading;
 using BluIpc.Common;
-using System.Management.Automation.Host;
 
 namespace BluRunspace
 {
     class BluRunspace: IDisposable
     {
-        private Runspace _psRunspace;
-        private BluPsHost _host;
+        private PowerShell _psRunspace;
 
         private void OpenRunspace()
         {
             try
             {
-                _host = new BluPsHost();
-                _psRunspace = RunspaceFactory.CreateRunspace(_host);
-                _psRunspace.Open();
+                _psRunspace = PowerShell.Create();
+                _psRunspace.Streams.Debug.DataAdded += DebugOnDataAdded;
+                _psRunspace.Streams.Error.DataAdded += ErrorOnDataAdded;
+                _psRunspace.Streams.Progress.DataAdded += ProgressOnDataAdded;
+                _psRunspace.Streams.Verbose.DataAdded += VerboseOnDataAdded;
+                _psRunspace.Streams.Warning.DataAdded += WarningOnDataAdded;
+                _psRunspace.Streams.Information.DataAdded += InformationOnDataAdded;
             }
             catch (Exception ex)
             {
@@ -32,6 +31,43 @@ namespace BluRunspace
                 EventLogHelper.WriteToEventLog(EventLogEntryType.Error, error);
                 throw new Exception(error);
             }
+        }
+
+        private void InformationOnDataAdded(object sender, DataAddedEventArgs dataAddedEventArgs)
+        {
+            var record = ((PSDataCollection<InformationRecord>)sender)[dataAddedEventArgs.Index];
+            Console.WriteLine(record.Computer);
+        }
+
+        private void WarningOnDataAdded(object sender, DataAddedEventArgs dataAddedEventArgs)
+        {
+            var record = ((PSDataCollection<WarningRecord>)sender)[dataAddedEventArgs.Index];
+            Console.WriteLine(record.Message);
+        }
+
+        private void VerboseOnDataAdded(object sender, DataAddedEventArgs dataAddedEventArgs)
+        {
+            var record = ((PSDataCollection<VerboseRecord>)sender)[dataAddedEventArgs.Index];
+            Console.WriteLine(record.Message);
+        }
+
+        private void ProgressOnDataAdded(object sender, DataAddedEventArgs dataAddedEventArgs)
+        {
+            var record = ((PSDataCollection<ProgressRecord>)sender)[dataAddedEventArgs.Index];
+            Console.WriteLine("Progress: " + record.PercentComplete);
+        }
+
+        private void ErrorOnDataAdded(object sender, DataAddedEventArgs dataAddedEventArgs)
+        {
+            var record = ((PSDataCollection<ErrorRecord>)sender)[dataAddedEventArgs.Index];
+            Console.WriteLine(record.ErrorDetails.Message);
+            Console.WriteLine(record.ErrorDetails.RecommendedAction ?? "");
+        }
+
+        private void DebugOnDataAdded(object sender, DataAddedEventArgs dataAddedEventArgs)
+        {
+            var record = ((PSDataCollection<DebugRecord>)sender)[dataAddedEventArgs.Index];
+            Console.WriteLine(record.Message);
         }
 
         public string RunScript(string file)
@@ -49,7 +85,6 @@ namespace BluRunspace
                     .TrimStart(Environment.NewLine.ToCharArray())
                     .TrimEnd(' ')
                     .TrimEnd(Environment.NewLine.ToCharArray());
-                EventLogHelper.WriteToEventLog(EventLogEntryType.Information, "File content is: " + content);
                 return content;
             }
             catch (Exception err)
@@ -66,39 +101,51 @@ namespace BluRunspace
                 OpenRunspace();
             }
 
-            Pipeline pipeline;
             try
             {
-                pipeline = _psRunspace.CreatePipeline();
-            }
-            catch (Exception ex)
-            {
-                var output = "Error creating pipeline: " + ex.Message;
-                EventLogHelper.WriteToEventLog(EventLogEntryType.Error, output);
-                return "Exit1:" + output;
-            }
-
-            try
-            {
-                pipeline.Commands.AddScript(scriptBlock);
-                var psObjects = pipeline.Invoke();
                 var exit = 0;
-                if (PsResultIsFalse(psObjects))
+
+                var pipeline = _psRunspace.Runspace.CreatePipeline();
+                
+                pipeline.Commands.AddScript(scriptBlock);
+
+                pipeline.Output.DataReady += (sender, args) =>
+                {
+                    var psObjects = pipeline.Output.NonBlockingRead();
+
+                    // if there were any, invoke the DataReady event
+                    if (psObjects.Count > 0)
+                    {
+                        Console.WriteLine(ProcessResult(psObjects));
+                    }
+
+                    if (pipeline.Output.EndOfPipeline)
+                    {
+                        if (PsResultIsFalse(psObjects))
+                        {
+                            exit = 1;
+                        }
+                        // handle end
+                    }
+                };
+
+                pipeline.InvokeAsync();
+
+                while (pipeline.PipelineStateInfo.State != PipelineState.Completed &&
+                       pipeline.PipelineStateInfo.State != PipelineState.Failed &&
+                       pipeline.PipelineStateInfo.State != PipelineState.Stopped)
+                {
+                    Thread.Sleep(10);
+                }
+                if (pipeline.PipelineStateInfo.State == PipelineState.Failed)
                 {
                     exit = 1;
                 }
-                if (pipeline.Error.Count > 0)
-                {
-                    return "Exit1:" + _host.GetAndClearOutput() + ProcessErrors(pipeline, scriptBlock);
-                }
-
-                var result = ProcessResult(psObjects, scriptBlock);
-                return "Exit" +  exit + ":" + _host.GetAndClearOutput() + result;
+                return "Exit" +  exit + ":";
             }
             catch (Exception ex)
             {
-                var output = _host.GetAndClearOutput()  + "Exception Invoking script block: " +
-                         scriptBlock.FormatForEventLog() +
+                var output = "Exception Invoking script block: " +
                          "Reason:" + Environment.NewLine +
                          ex;
                 EventLogHelper.WriteToEventLog(EventLogEntryType.Error, output);
@@ -111,55 +158,55 @@ namespace BluRunspace
             return psObjects.Count == 1 && psObjects[0].BaseObject is bool && (bool)psObjects[0].BaseObject == false;
         }
 
-        private string ProcessErrors(Pipeline pipeline, string scriptBlock)
+        //private string ProcessErrors(Pipeline pipeline, string scriptBlock)
+        //{
+        //    var errorObject = pipeline.Error.Read();
+        //    var errorRecords = errorObject as Collection<ErrorRecord>;
+        //    if (errorRecords != null)
+        //    {
+        //        var errors = string.Empty;
+        //        foreach (var er in errorRecords)
+        //        {
+        //            EventLogHelper.WriteToEventLog(EventLogEntryType.Warning,
+        //                "Collecting error messages...");
+        //            try
+        //            {
+        //                if (!string.IsNullOrEmpty(er.Exception.Message))
+        //                    errors += "Message: " + er.Exception.Message + Environment.NewLine;
+        //                if (!string.IsNullOrEmpty(er.Exception.Source))
+        //                    errors += "Source: " + er.Exception.Source + Environment.NewLine;
+        //                if (er.Exception.InnerException != null &&
+        //                    !string.IsNullOrEmpty(er.Exception.InnerException.ToString()))
+        //                    errors += "InnerException: " + er.Exception.InnerException + Environment.NewLine;
+        //                if (!string.IsNullOrEmpty(er.Exception.StackTrace))
+        //                    errors += "StackTrace: " + er.Exception.StackTrace + Environment.NewLine;
+        //                if (!string.IsNullOrEmpty(er.Exception.HelpLink))
+        //                    errors += "HelpLink: " + er.Exception.HelpLink + Environment.NewLine;
+        //                if (!string.IsNullOrEmpty(er.Exception.TargetSite.ToString()))
+        //                    errors += "TargetSite: " + er.Exception.TargetSite + Environment.NewLine;
+        //                if (!string.IsNullOrEmpty(er.Exception.Data.ToString()))
+        //                    errors += "Exception Data: " + er.Exception.Data + Environment.NewLine;
+        //                errors += "--------------";
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                errors += "Error on collecting PowerShell exception messages: " + ex.Message;
+        //            }
+
+        //            var message = "Script Block: " + scriptBlock.FormatForEventLog() +
+        //                          "Executed and returned the following errors:" +
+        //                          Config.SeparatorLine + errors;
+
+        //            EventLogHelper.WriteToEventLog(EventLogEntryType.Error, message);
+        //            return "Exit1:" + message;
+        //        }
+        //    }
+        //    return "Errors executing, errorObject: " + errorObject;
+        //}
+
+        private string ProcessResult(Collection<PSObject> psObjects)
         {
-            var errorObject = pipeline.Error.Read();
-            var errorRecords = errorObject as Collection<ErrorRecord>;
-            if (errorRecords != null)
-            {
-                var errors = string.Empty;
-                foreach (var er in errorRecords)
-                {
-                    EventLogHelper.WriteToEventLog(EventLogEntryType.Warning,
-                        "Collecting error messages...");
-                    try
-                    {
-                        if (!string.IsNullOrEmpty(er.Exception.Message))
-                            errors += "Message: " + er.Exception.Message + Environment.NewLine;
-                        if (!string.IsNullOrEmpty(er.Exception.Source))
-                            errors += "Source: " + er.Exception.Source + Environment.NewLine;
-                        if (er.Exception.InnerException != null &&
-                            !string.IsNullOrEmpty(er.Exception.InnerException.ToString()))
-                            errors += "InnerException: " + er.Exception.InnerException + Environment.NewLine;
-                        if (!string.IsNullOrEmpty(er.Exception.StackTrace))
-                            errors += "StackTrace: " + er.Exception.StackTrace + Environment.NewLine;
-                        if (!string.IsNullOrEmpty(er.Exception.HelpLink))
-                            errors += "HelpLink: " + er.Exception.HelpLink + Environment.NewLine;
-                        if (!string.IsNullOrEmpty(er.Exception.TargetSite.ToString()))
-                            errors += "TargetSite: " + er.Exception.TargetSite + Environment.NewLine;
-                        if (!string.IsNullOrEmpty(er.Exception.Data.ToString()))
-                            errors += "Exception Data: " + er.Exception.Data + Environment.NewLine;
-                        errors += "--------------";
-                    }
-                    catch (Exception ex)
-                    {
-                        errors += "Error on collecting PowerShell exception messages: " + ex.Message;
-                    }
-
-                    var message = "Script Block: " + scriptBlock.FormatForEventLog() +
-                                  "Executed and returned the following errors:" +
-                                  Config.SeparatorLine + errors;
-
-                    EventLogHelper.WriteToEventLog(EventLogEntryType.Error, message);
-                    return "Exit1:" + message;
-                }
-            }
-            return "Errors executing, errorObject: " + errorObject;
-        }
-
-        private string ProcessResult(Collection<PSObject> psObjects, string scriptBlock)
-        {
-            var output = "Execution of Script Block: " + scriptBlock.FormatForEventLog();
+            var output = "Execution of Script Block: ";
             var result = string.Empty;
             try
             {
@@ -171,7 +218,7 @@ namespace BluRunspace
 
                     case 1:
                         // Accept null as a valid osObject and BaseObject, so return null
-                        if (psObjects[0] == null || psObjects[0].BaseObject == null)
+                        if (psObjects[0]?.BaseObject == null)
                         {
                             output += "Is completed successfully and returned null." + Environment.NewLine;
                         }
@@ -188,7 +235,7 @@ namespace BluRunspace
                                   Environment.NewLine;
                         foreach (var pso in psObjects)
                         {
-                            if (pso == null || pso.BaseObject == null)
+                            if (pso?.BaseObject == null)
                             {
                                 continue;
                             }
@@ -209,10 +256,7 @@ namespace BluRunspace
 
         public void Dispose()
         {
-            if (_psRunspace != null)
-            {
-                _psRunspace.Dispose();
-            }
+            _psRunspace?.Dispose();
         }
     }
 }
