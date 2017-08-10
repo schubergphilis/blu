@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using BluIpc.Client;
 using BluIpc.Common;
@@ -110,23 +111,29 @@ namespace BluShell
 
                 var bytes = Encoding.UTF8.GetBytes(pipeCommand);
                 pipe.Write(bytes, 0, bytes.Length);
-
-                //TODO: If Exit0: or Exit1: never comes this spins out of controlllllllllllllllll..........
-                while (true)
+                var exit = 0;
+                while (pipe.IsConnected)
                 {
                     // Read the result
                     var data = new Byte[IpcClient.ClientInBufferSize];
                     var bytesRead = pipe.Read(data, 0, data.Length);
                     var message = Encoding.UTF8.GetString(data, 0, bytesRead);
-                    if (message.StartsWith("Exit0:") || message.StartsWith("Exit1:"))
+                    var match = Regex.Match(message, @"Exit(\d):");
+                    if (match.Success)
                     {
-                        return ExitHandler(message);
+                        exit = int.Parse(match.Groups[1].Value);
+                        Console.WriteLine(message.Replace(match.Value, ""));
+                    }
+                    else if (message.Contains(Config.RunspaceExecutionDone))
+                    {
+                        Environment.Exit(exit);
                     }
                     else
                     {
                         Console.WriteLine(message);
                     }
                 }
+                return exit;
             }
             catch (Exception ex)
             {

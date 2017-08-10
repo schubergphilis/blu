@@ -54,7 +54,7 @@ namespace BluService
             _runspaceConsole = new Process { StartInfo = startInfo };
             _runspaceConsole.OutputDataReceived += (sender, args) =>
             {
-                if (args.Data?.EndsWith(Config.RunspaceExecutionDone) ?? false)
+                if (args.Data?.Contains(Config.RunspaceExecutionDone) ?? false)
                 {
                     _runningScript = false;
                 }
