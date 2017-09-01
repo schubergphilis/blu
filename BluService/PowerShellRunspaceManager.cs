@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using BluIpc.Common;
 
 namespace BluService
@@ -12,7 +13,9 @@ namespace BluService
         private const string DefaultRunspace = "_default";
         private readonly Dictionary<string, PowerShellRunspace> _runspaces = new Dictionary<string, PowerShellRunspace>();
 
-        public string ProcessMessage(string message)
+        public event EventHandler<DataReceivedEventArgs> ScriptOutputReceived;
+
+        public async Task<string> ProcessMessage(string message)
         {
             var parts = GetMessageParts(message);
             var command = parts[0];
@@ -23,7 +26,7 @@ namespace BluService
                 case Config.DisposeRunspaceCommand:
                     return DisposeRunspace(parts);
                 case Config.ExecuteCommand:
-                    return Execute(parts);
+                    return await Execute(parts);
                 default:
                     return "Exit1:UknownCommand";
             }
@@ -52,7 +55,13 @@ namespace BluService
                 return "Exit0:Runspace " + runspace + " already exists, command ignored.";
             }
             _runspaces[runspace] = new PowerShellRunspace(runspace, userData);
+            _runspaces[runspace].ScriptOutputReceived += OnScriptOutputReceived;
             return "Exit0:Runspace " + runspace + " created.";
+        }
+
+        private void OnScriptOutputReceived(object sender, DataReceivedEventArgs dataReceivedEventArgs)
+        {
+            ScriptOutputReceived?.Invoke(this, dataReceivedEventArgs);
         }
 
         private string DisposeRunspace(string[] parts)
@@ -67,14 +76,14 @@ namespace BluService
             return "Exit0:Runspace " + parts[1] + " disposed.";
         }
 
-        private string Execute(string[] parts)
+        private async Task<string> Execute(string[] parts)
         {
             switch (parts.Length)
             {
                 case 2:
-                    return ExecuteScript(parts[1]);
+                    return await ExecuteScript(parts[1]);
                 case 3:
-                    return ExecuteScript(parts[2], parts[1]);
+                    return await ExecuteScript(parts[2], parts[1]);
                 default:
                     var error = "Unexpected number of message parts. Received " + parts.Length + " parts, expecting 2 or 3.";
                     EventLogHelper.WriteToEventLog(EventLogEntryType.Error, error);
@@ -87,16 +96,16 @@ namespace BluService
             return message.Split(new[] { Config.MagicSplitString }, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        private string ExecuteScript(string scriptFile)
+        private async Task<string> ExecuteScript(string scriptFile)
         {
             if (!_runspaces.ContainsKey(DefaultRunspace))
             {
                 _runspaces[DefaultRunspace] = new PowerShellRunspace(DefaultRunspace);
             }
-            return ExecuteScript(scriptFile, DefaultRunspace);
+            return await ExecuteScript(scriptFile, DefaultRunspace);
         }
 
-        private string ExecuteScript(string scriptFile, string runspace)
+        private async Task<string> ExecuteScript(string scriptFile, string runspace)
         {
             if (!scriptFile.EndsWith(".ps1") && !File.Exists(scriptFile))
             {
@@ -111,7 +120,7 @@ namespace BluService
                            " has not been created yet, ABORTING. Please execute BluShell runspace " + runspace +
                            " --credentials <credentials> first.";
                 }
-                return _runspaces[runspace].ExecuteScript(scriptFile);
+                return await _runspaces[runspace].ExecuteScript(scriptFile);
             }
             catch (Exception err)
             {

@@ -13,55 +13,52 @@ namespace BluRunspace
 {
     public class BluPsHost : PSHost
     {
+        public BluPsHost()
+        {
+            var ui =new BluPsHostUserInterface();
+            ui.DataReady += UiOnDataReady;
+            UI = ui;
+        }
+
+        public event EventHandler<string> DataReady;
+
+        private void UiOnDataReady(object sender, string message)
+        {
+            DataReady?.Invoke(sender, message);
+        }
+
         public override void SetShouldExit(int exitCode)
         {
-            return;
         }
 
         public override void EnterNestedPrompt()
         {
-            throw new NotImplementedException();
         }
 
         public override void ExitNestedPrompt()
         {
-            throw new NotImplementedException();
         }
 
         public override void NotifyBeginApplication()
         {
-            return;
         }
 
         public override void NotifyEndApplication()
         {
-            return;
         }
 
         public override string Name { get; } = "BluPSHost";
         public override Version Version { get; } = new Version(4, 0, 0);
         public override Guid InstanceId { get; } = Guid.NewGuid();
-        public override PSHostUserInterface UI { get; } = new BluPsHostUserInterface();
+        public override PSHostUserInterface UI { get; }
         public override CultureInfo CurrentCulture { get; } = Thread.CurrentThread.CurrentCulture;
         public override CultureInfo CurrentUICulture { get; } = Thread.CurrentThread.CurrentUICulture;
-
-        public string GetAndClearOutput()
-        {
-            return ((BluPsHostUserInterface)UI).GetAndClearHostOutput();
-        }
     }
 
     public class BluPsHostUserInterface : PSHostUserInterface
     {
-        private readonly StringBuilder _outputCache = new StringBuilder();
-
-        public string GetAndClearHostOutput()
-        {
-            var retVal = _outputCache.ToString();
-            _outputCache.Clear();
-            return retVal;
-        }
-
+        public event EventHandler<string> DataReady;
+        
         public override string ReadLine()
         {
             return Console.ReadLine();
@@ -94,42 +91,42 @@ namespace BluRunspace
 
         public override void Write(string value)
         {
-            _outputCache.Append(value);
+            DataReady?.Invoke(this, value);
         }
 
         public override void Write(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            _outputCache.Append(value);
+            DataReady?.Invoke(this, value);
         }
 
         public override void WriteLine(string value)
         {
-            _outputCache.Append(value + Environment.NewLine);
+            DataReady?.Invoke(this, value + Environment.NewLine);
         }
 
         public override void WriteErrorLine(string value)
         {
-            _outputCache.Append("ERROR: " + value + Environment.NewLine);
+            DataReady?.Invoke(this, "ERROR: " + value + Environment.NewLine);
         }
 
         public override void WriteDebugLine(string message)
         {
-            _outputCache.Append("DEBUG: " + message + Environment.NewLine);
+            DataReady?.Invoke(this, "DEBUG: " + message + Environment.NewLine);
         }
 
         public override void WriteProgress(long sourceId, ProgressRecord record)
         {
-            return;
+            DataReady?.Invoke(this, "PROGRESS: " + record.PercentComplete + Environment.NewLine);
         }
 
         public override void WriteVerboseLine(string message)
         {
-            _outputCache.Append("VERBOSE: " + message + Environment.NewLine);
+            DataReady?.Invoke(this, "VERBOSE: " + message + Environment.NewLine);
         }
 
         public override void WriteWarningLine(string message)
         {
-            _outputCache.Append("WARNING: " + message + Environment.NewLine);
+            DataReady?.Invoke(this, "WARNING: " + message + Environment.NewLine);
         }
 
         public override Dictionary<string, PSObject> Prompt(string caption, string message, Collection<FieldDescription> descriptions)

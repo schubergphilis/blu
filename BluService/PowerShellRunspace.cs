@@ -4,20 +4,24 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using BluIpc.Common;
 
 namespace BluService
 {
     public class PowerShellRunspace : IDisposable
     {
+        private bool _runningScript;
         private Process _runspaceConsole;
-        private EventWaitHandle _eventWaitHandle;
-        private string _waitHandleName;
-        private string _dataReceived = string.Empty;
+        private readonly EventWaitHandle _eventWaitHandle;
+        private readonly string _waitHandleName;
 
         public PowerShellRunspace(string runspaceName) : this(runspaceName, null)
         {
         }
+
+        public event EventHandler<DataReceivedEventArgs> ScriptOutputReceived;
+
 
         public PowerShellRunspace(string runspaceName, UserData userData)
         {
@@ -48,44 +52,51 @@ namespace BluService
                 startInfo.LoadUserProfile = true;
             }
             _runspaceConsole = new Process { StartInfo = startInfo };
-            _runspaceConsole.OutputDataReceived += (sender, args) => { _dataReceived += args.Data + Environment.NewLine; };
-            _runspaceConsole.ErrorDataReceived += (sender, args) => { _dataReceived += args.Data + Environment.NewLine; };
+            _runspaceConsole.OutputDataReceived += (sender, args) =>
+            {
+                if (args.Data?.Contains(Config.RunspaceExecutionDone) ?? false)
+                {
+                    _runningScript = false;
+                }
+                ScriptOutputReceived?.Invoke(sender, args);
+            };
+            _runspaceConsole.ErrorDataReceived += (sender, args) =>
+            {
+                ScriptOutputReceived?.Invoke(sender, args);
+            };
             _runspaceConsole.Start();
             _runspaceConsole.BeginErrorReadLine();
             _runspaceConsole.BeginOutputReadLine();
             Thread.Sleep(500); // Making sure that data reading events are running
-            _dataReceived = string.Empty;
             if (!_eventWaitHandle.WaitOne(60000))
             {
                 throw new Exception("Error starting runspace - timeout");
             }
         }
 
-        public string ExecuteScript(string scriptFile)
+        public async Task<string> ExecuteScript(string scriptFile)
         {
+            _runningScript = true;
             if (_runspaceConsole.HasExited)
             {
                 return "Exit1:runspace has exited, dispose and recreate";
             }
             _runspaceConsole.StandardInput.WriteLine(scriptFile);
-            if (!_eventWaitHandle.WaitOne(TimeSpan.FromHours(4)))
+            if (await Task.Run(() => !_eventWaitHandle.WaitOne(TimeSpan.FromHours(4))))
             {
                 return "Exit1:runspace timeout";
             }
 
-            var output = new StringBuilder();
             if (_runspaceConsole.HasExited && _runspaceConsole.ExitCode != 0)
             {
-                output.Append("Exit1:");
+                return "Exit1:Error during script execution";
             }
-            while (!_dataReceived.Trim().EndsWith(Config.RunspaceExecutionDone))
+            while (_runningScript)
             {
-                Thread.Sleep(10);
+                Thread.Sleep(50);
             }
-            _dataReceived = _dataReceived.Replace(Config.RunspaceExecutionDone, "").Trim();
-            output.Append(_dataReceived);
-            _dataReceived = string.Empty;
-            return output.ToString();
+
+            return "Exit0:";
         }
 
         public void Dispose()

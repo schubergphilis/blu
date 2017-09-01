@@ -1,29 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
-using System.Text;
 using System.Threading;
 using BluIpc.Common;
-using System.Management.Automation.Host;
 
 namespace BluRunspace
 {
     class BluRunspace: IDisposable
     {
         private Runspace _psRunspace;
-        private BluPsHost _host;
 
         private void OpenRunspace()
         {
             try
             {
-                _host = new BluPsHost();
-                _psRunspace = RunspaceFactory.CreateRunspace(_host);
+                var host = new BluPsHost();
+                host.DataReady += HostOnDataReady;
+                _psRunspace = RunspaceFactory.CreateRunspace(host);
                 _psRunspace.Open();
             }
             catch (Exception ex)
@@ -32,6 +28,11 @@ namespace BluRunspace
                 EventLogHelper.WriteToEventLog(EventLogEntryType.Error, error);
                 throw new Exception(error);
             }
+        }
+
+        private void HostOnDataReady(object sender, string message)
+        {
+            Console.Write(message);
         }
 
         public string RunScript(string file)
@@ -49,7 +50,6 @@ namespace BluRunspace
                     .TrimStart(Environment.NewLine.ToCharArray())
                     .TrimEnd(' ')
                     .TrimEnd(Environment.NewLine.ToCharArray());
-                EventLogHelper.WriteToEventLog(EventLogEntryType.Information, "File content is: " + content);
                 return content;
             }
             catch (Exception err)
@@ -66,39 +66,84 @@ namespace BluRunspace
                 OpenRunspace();
             }
 
-            Pipeline pipeline;
             try
             {
-                pipeline = _psRunspace.CreatePipeline();
-            }
-            catch (Exception ex)
-            {
-                var output = "Error creating pipeline: " + ex.Message;
-                EventLogHelper.WriteToEventLog(EventLogEntryType.Error, output);
-                return "Exit1:" + output;
-            }
-
-            try
-            {
-                pipeline.Commands.AddScript(scriptBlock);
-                var psObjects = pipeline.Invoke();
                 var exit = 0;
-                if (PsResultIsFalse(psObjects))
+
+                var pipeline = _psRunspace.CreatePipeline();
+                
+                pipeline.Commands.AddScript(scriptBlock);
+
+                pipeline.Error.DataReady += (sender, args) =>
+                {
+                    var data = pipeline.Error.Read(1);
+                    if (data.Count > 0)
+                    {
+                        var errors = ProcessErrors(data);
+                        Console.WriteLine(errors);
+                    }
+                };
+
+                pipeline.Output.DataReady += (sender, args) =>
+                {
+                    var psObjects = pipeline.Output.Read(1);
+
+                    if (psObjects.Count > 0)
+                    {
+                        Console.WriteLine(ProcessResult(psObjects));
+                    }
+
+                    if (pipeline.Output.EndOfPipeline)
+                    {
+                        if (PsResultIsFalse(psObjects))
+                        {
+                            exit = 1;
+                        }
+                        // handle end
+                    }
+                };
+
+                pipeline.Input.Close();
+                try
+                {
+                    pipeline.Invoke();
+                }
+                catch (CmdletInvocationException err)
                 {
                     exit = 1;
+                    if (err.ErrorRecord != null)
+                    {
+                        Console.WriteLine("ERROR: " + err.ErrorRecord);
+                        Console.WriteLine(err.ErrorRecord.ScriptStackTrace);
+                    }
+                    else
+                    {
+                        Console.WriteLine(err);
+                    }
                 }
-                if (pipeline.Error.Count > 0)
+                catch (RuntimeException err)
                 {
-                    return "Exit1:" + _host.GetAndClearOutput() + ProcessErrors(pipeline, scriptBlock);
+                    exit = 1;
+                    if (err.ErrorRecord != null)
+                    {
+                        Console.WriteLine("ERROR: " + err.ErrorRecord);
+                        Console.WriteLine(err.ErrorRecord.ScriptStackTrace);
+                    }
+                    else
+                    {
+                        Console.WriteLine(err);
+                    }
                 }
 
-                var result = ProcessResult(psObjects, scriptBlock);
-                return "Exit" +  exit + ":" + _host.GetAndClearOutput() + result;
+                if (pipeline.PipelineStateInfo.State == PipelineState.Failed)
+                {
+                    return "Exit1:" + pipeline.PipelineStateInfo.Reason.Message;
+                }
+                return "Exit" +  exit + ":";
             }
             catch (Exception ex)
             {
-                var output = _host.GetAndClearOutput()  + "Exception Invoking script block: " +
-                         scriptBlock.FormatForEventLog() +
+                var output = "Exception Invoking script block: " +
                          "Reason:" + Environment.NewLine +
                          ex;
                 EventLogHelper.WriteToEventLog(EventLogEntryType.Error, output);
@@ -111,9 +156,8 @@ namespace BluRunspace
             return psObjects.Count == 1 && psObjects[0].BaseObject is bool && (bool)psObjects[0].BaseObject == false;
         }
 
-        private string ProcessErrors(Pipeline pipeline, string scriptBlock)
+        private string ProcessErrors(object errorObject)
         {
-            var errorObject = pipeline.Error.Read();
             var errorRecords = errorObject as Collection<ErrorRecord>;
             if (errorRecords != null)
             {
@@ -125,20 +169,38 @@ namespace BluRunspace
                     try
                     {
                         if (!string.IsNullOrEmpty(er.Exception.Message))
+                        {
                             errors += "Message: " + er.Exception.Message + Environment.NewLine;
+                        }
                         if (!string.IsNullOrEmpty(er.Exception.Source))
+                        {
                             errors += "Source: " + er.Exception.Source + Environment.NewLine;
+                        }
                         if (er.Exception.InnerException != null &&
                             !string.IsNullOrEmpty(er.Exception.InnerException.ToString()))
+                        {
                             errors += "InnerException: " + er.Exception.InnerException + Environment.NewLine;
+                        }
                         if (!string.IsNullOrEmpty(er.Exception.StackTrace))
+                        {
                             errors += "StackTrace: " + er.Exception.StackTrace + Environment.NewLine;
+                        }
                         if (!string.IsNullOrEmpty(er.Exception.HelpLink))
+                        {
                             errors += "HelpLink: " + er.Exception.HelpLink + Environment.NewLine;
+                        }
                         if (!string.IsNullOrEmpty(er.Exception.TargetSite.ToString()))
+                        {
                             errors += "TargetSite: " + er.Exception.TargetSite + Environment.NewLine;
+                        }
                         if (!string.IsNullOrEmpty(er.Exception.Data.ToString()))
+                        {
                             errors += "Exception Data: " + er.Exception.Data + Environment.NewLine;
+                        }
+                        if (!string.IsNullOrEmpty(er.ScriptStackTrace))
+                        {
+                            errors += "ScriptStackTrace: " + er.ScriptStackTrace + Environment.NewLine;
+                        }
                         errors += "--------------";
                     }
                     catch (Exception ex)
@@ -146,8 +208,7 @@ namespace BluRunspace
                         errors += "Error on collecting PowerShell exception messages: " + ex.Message;
                     }
 
-                    var message = "Script Block: " + scriptBlock.FormatForEventLog() +
-                                  "Executed and returned the following errors:" +
+                    var message = "Executed and returned the following errors:" +
                                   Config.SeparatorLine + errors;
 
                     EventLogHelper.WriteToEventLog(EventLogEntryType.Error, message);
@@ -157,9 +218,9 @@ namespace BluRunspace
             return "Errors executing, errorObject: " + errorObject;
         }
 
-        private string ProcessResult(Collection<PSObject> psObjects, string scriptBlock)
+        private string ProcessResult(Collection<PSObject> psObjects)
         {
-            var output = "Execution of Script Block: " + scriptBlock.FormatForEventLog();
+            var output = "Execution of Script Block: ";
             var result = string.Empty;
             try
             {
@@ -171,7 +232,7 @@ namespace BluRunspace
 
                     case 1:
                         // Accept null as a valid osObject and BaseObject, so return null
-                        if (psObjects[0] == null || psObjects[0].BaseObject == null)
+                        if (psObjects[0]?.BaseObject == null)
                         {
                             output += "Is completed successfully and returned null." + Environment.NewLine;
                         }
@@ -188,7 +249,7 @@ namespace BluRunspace
                                   Environment.NewLine;
                         foreach (var pso in psObjects)
                         {
-                            if (pso == null || pso.BaseObject == null)
+                            if (pso?.BaseObject == null)
                             {
                                 continue;
                             }
@@ -209,10 +270,7 @@ namespace BluRunspace
 
         public void Dispose()
         {
-            if (_psRunspace != null)
-            {
-                _psRunspace.Dispose();
-            }
+            _psRunspace?.Dispose();
         }
     }
 }

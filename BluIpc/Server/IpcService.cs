@@ -26,7 +26,6 @@ namespace BluIpc.Server
             int instances
         )
         {
-            Debug.Assert(!_running);
             _running = true;
 
             // Save parameters for next new pipe

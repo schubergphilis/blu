@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using BluIpc.Client;
 using BluIpc.Common;
@@ -72,7 +73,7 @@ namespace BluShell
             {
                 scriptFile += "-" + runspace;
             }
-            scriptFile = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+            scriptFile += DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
             scriptFile += "-" + Guid.NewGuid().ToString("N").Substring(5, 4);
             scriptFile += ".ps1";
             var fullName = Path.Combine(Config.TempPath, scriptFile);
@@ -110,11 +111,29 @@ namespace BluShell
 
                 var bytes = Encoding.UTF8.GetBytes(pipeCommand);
                 pipe.Write(bytes, 0, bytes.Length);
-
-                // Read the result
-                var data = new Byte[IpcClient.ClientInBufferSize];
-                var bytesRead = pipe.Read(data, 0, data.Length);
-                return ExitHandler(Encoding.UTF8.GetString(data, 0, bytesRead));
+                var exit = 0;
+                while (pipe.IsConnected)
+                {
+                    // Read the result
+                    var data = new Byte[IpcClient.ClientInBufferSize];
+                    var bytesRead = pipe.Read(data, 0, data.Length);
+                    var message = Encoding.UTF8.GetString(data, 0, bytesRead);
+                    var match = Regex.Match(message, @"Exit(\d):");
+                    if (match.Success)
+                    {
+                        exit = int.Parse(match.Groups[1].Value);
+                        Console.WriteLine(message.Replace(match.Value, ""));
+                    }
+                    else if (message.Contains(Config.RunspaceExecutionDone))
+                    {
+                        Environment.Exit(exit);
+                    }
+                    else
+                    {
+                        Console.WriteLine(message);
+                    }
+                }
+                return exit;
             }
             catch (Exception ex)
             {
@@ -126,10 +145,7 @@ namespace BluShell
             }
             finally
             {
-                if (pipe != null)
-                {
-                    pipe.Close();
-                }
+                pipe?.Close();
             }
         }
 
@@ -140,9 +156,13 @@ namespace BluShell
 
         private static int ExitHandler(string serverMessage)
         {
-            Console.WriteLine(serverMessage.Substring(6));
-            var exitCode = serverMessage.StartsWith("Exit0:") ? 0 : 1;
-            return exitCode;
+            if (serverMessage?.Length > 6)
+            {
+                Console.WriteLine(serverMessage.Substring(6));
+                var exitCode = serverMessage.StartsWith("Exit0:") ? 0 : 1;
+                return exitCode;
+            }
+            return 1;
         }
     }
 }
