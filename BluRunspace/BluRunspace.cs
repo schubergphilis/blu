@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -68,7 +69,7 @@ namespace BluRunspace
 
             try
             {
-                var exit = 0;
+                var exit = new List<int>();
 
                 var pipeline = _psRunspace.CreatePipeline();
                 
@@ -94,7 +95,11 @@ namespace BluRunspace
                     }
                     if (PsResultIsFalse(psObjects))
                     {
-                        exit = 1;
+                        exit.Add(1);
+                    }
+                    else if (psObjects.Count > 0)
+                    {
+                        exit.Add(0);
                     }
                     // handle end
                 };
@@ -106,7 +111,8 @@ namespace BluRunspace
                 }
                 catch (CmdletInvocationException err)
                 {
-                    exit = 1;
+                    exit.Clear();
+                    exit.Add(1);
                     if (err.ErrorRecord != null)
                     {
                         Console.WriteLine("ERROR: " + err.ErrorRecord);
@@ -119,7 +125,8 @@ namespace BluRunspace
                 }
                 catch (RuntimeException err)
                 {
-                    exit = 1;
+                    exit.Clear();
+                    exit.Add(1);
                     if (err.ErrorRecord != null)
                     {
                         Console.WriteLine("ERROR: " + err.ErrorRecord);
@@ -135,7 +142,7 @@ namespace BluRunspace
                 {
                     return "Exit1:" + pipeline.PipelineStateInfo.Reason.Message;
                 }
-                return "Exit" +  exit + ":";
+                return "Exit" + (exit.Count == 1 ? exit[0] : 0) + ":";
             }
             catch (Exception ex)
             {
