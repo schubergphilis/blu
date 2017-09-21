@@ -100,7 +100,7 @@ namespace BluService
         {
             if (!_runspaces.ContainsKey(DefaultRunspace))
             {
-                _runspaces[DefaultRunspace] = new PowerShellRunspace(DefaultRunspace);
+                CreateRunspace(DefaultRunspace, null);
             }
             return await ExecuteScript(scriptFile, DefaultRunspace);
         }

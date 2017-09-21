@@ -92,15 +92,11 @@ namespace BluRunspace
                     {
                         Console.WriteLine(ProcessResult(psObjects));
                     }
-
-                    if (pipeline.Output.EndOfPipeline)
+                    if (PsResultIsFalse(psObjects))
                     {
-                        if (PsResultIsFalse(psObjects))
-                        {
-                            exit = 1;
-                        }
-                        // handle end
+                        exit = 1;
                     }
+                    // handle end
                 };
 
                 pipeline.Input.Close();
