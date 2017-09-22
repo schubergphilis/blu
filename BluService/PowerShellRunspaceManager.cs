@@ -52,7 +52,14 @@ namespace BluService
         {
             if (_runspaces.ContainsKey(runspace))
             {
-                return "Exit0:Runspace " + runspace + " already exists, command ignored.";
+                if (_runspaces[runspace].HasExited())
+                {
+                    _runspaces[runspace].Dispose();
+                }
+                else
+                {
+                    return "Exit0:Runspace " + runspace + " already exists, command ignored.";
+                }
             }
             _runspaces[runspace] = new PowerShellRunspace(runspace, userData);
             _runspaces[runspace].ScriptOutputReceived += OnScriptOutputReceived;

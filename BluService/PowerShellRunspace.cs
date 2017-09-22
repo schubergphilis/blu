@@ -74,6 +74,11 @@ namespace BluService
             }
         }
 
+        public bool HasExited()
+        {
+            return _runspaceConsole.HasExited;
+        }
+
         public async Task<string> ExecuteScript(string scriptFile)
         {
             _runningScript = true;
