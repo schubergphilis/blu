@@ -76,7 +76,14 @@ namespace BluService
 
         public bool HasExited()
         {
-            return _runspaceConsole.HasExited;
+            try
+            {
+                return _runspaceConsole.HasExited;
+            }
+            catch
+            {
+                return true;
+            }
         }
 
         public async Task<string> ExecuteScript(string scriptFile)
