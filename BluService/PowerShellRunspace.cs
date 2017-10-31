@@ -111,7 +111,10 @@ namespace BluService
                 try
                 {
                     _runspaceConsole.StandardInput.WriteLine("quit");
-                    _eventWaitHandle.WaitOne(3000);
+                    if (!_eventWaitHandle.WaitOne(5000))
+                    {
+                        _runspaceConsole.Kill();
+                    }
                 }
                 catch
                 {

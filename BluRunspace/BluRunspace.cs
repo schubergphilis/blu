@@ -156,69 +156,94 @@ namespace BluRunspace
 
         private static bool PsResultIsFalse(Collection<PSObject> psObjects)
         {
-            return psObjects.Count == 1 && psObjects[0].BaseObject is bool && (bool)psObjects[0].BaseObject == false;
+            return psObjects.Count == 1 && psObjects[0] != null && psObjects[0].BaseObject is bool && (bool)psObjects[0].BaseObject == false;
         }
 
-        private string ProcessErrors(object errorObject)
+        private string ProcessErrors(Collection<object> errorCollection)
         {
-            var errorRecords = errorObject as Collection<ErrorRecord>;
-            if (errorRecords != null)
+            if (errorCollection != null)
             {
-                var errors = string.Empty;
-                foreach (var er in errorRecords)
+                var message = "";
+                foreach (var er in errorCollection)
                 {
                     EventLogHelper.WriteToEventLog(EventLogEntryType.Warning,
                         "Collecting error messages...");
-                    try
-                    {
-                        if (!string.IsNullOrEmpty(er.Exception.Message))
-                        {
-                            errors += "Message: " + er.Exception.Message + Environment.NewLine;
-                        }
-                        if (!string.IsNullOrEmpty(er.Exception.Source))
-                        {
-                            errors += "Source: " + er.Exception.Source + Environment.NewLine;
-                        }
-                        if (er.Exception.InnerException != null &&
-                            !string.IsNullOrEmpty(er.Exception.InnerException.ToString()))
-                        {
-                            errors += "InnerException: " + er.Exception.InnerException + Environment.NewLine;
-                        }
-                        if (!string.IsNullOrEmpty(er.Exception.StackTrace))
-                        {
-                            errors += "StackTrace: " + er.Exception.StackTrace + Environment.NewLine;
-                        }
-                        if (!string.IsNullOrEmpty(er.Exception.HelpLink))
-                        {
-                            errors += "HelpLink: " + er.Exception.HelpLink + Environment.NewLine;
-                        }
-                        if (!string.IsNullOrEmpty(er.Exception.TargetSite.ToString()))
-                        {
-                            errors += "TargetSite: " + er.Exception.TargetSite + Environment.NewLine;
-                        }
-                        if (!string.IsNullOrEmpty(er.Exception.Data.ToString()))
-                        {
-                            errors += "Exception Data: " + er.Exception.Data + Environment.NewLine;
-                        }
-                        if (!string.IsNullOrEmpty(er.ScriptStackTrace))
-                        {
-                            errors += "ScriptStackTrace: " + er.ScriptStackTrace + Environment.NewLine;
-                        }
-                        errors += "--------------";
-                    }
-                    catch (Exception ex)
-                    {
-                        errors += "Error on collecting PowerShell exception messages: " + ex.Message;
-                    }
 
-                    var message = "Executed and returned the following errors:" +
-                                  Config.SeparatorLine + errors;
+                    var psObject = er as PSObject;
+                    if (psObject != null)
+                    {
+                        message = ProcessError(psObject);
+                    }
+                    else
+                    {
+                        var psError = er as ErrorRecord;
+                        message = ProcessError(psError);
+                    }
 
                     EventLogHelper.WriteToEventLog(EventLogEntryType.Error, message);
-                    return "Exit1:" + message;
                 }
+                return "Exit1:" + message;
             }
-            return "Errors executing, errorObject: " + errorObject;
+            return "Exit1:No errors found, but still error.";
+        }
+
+        private static string ProcessError(PSObject er)
+        {
+            if (er.BaseObject is string)
+            {
+                return (string)er.BaseObject;
+            }
+            return er.ToString();
+        }
+
+        private static string ProcessError(ErrorRecord er)
+        {
+            var errors = string.Empty;
+            try
+            {
+                if (!string.IsNullOrEmpty(er.Exception.Message))
+                {
+                    errors += "Message: " + er.Exception.Message + Environment.NewLine;
+                }
+                if (!string.IsNullOrEmpty(er.Exception.Source))
+                {
+                    errors += "Source: " + er.Exception.Source + Environment.NewLine;
+                }
+                if (er.Exception.InnerException != null &&
+                    !string.IsNullOrEmpty(er.Exception.InnerException.ToString()))
+                {
+                    errors += "InnerException: " + er.Exception.InnerException + Environment.NewLine;
+                }
+                if (!string.IsNullOrEmpty(er.Exception.StackTrace))
+                {
+                    errors += "StackTrace: " + er.Exception.StackTrace + Environment.NewLine;
+                }
+                if (!string.IsNullOrEmpty(er.Exception.HelpLink))
+                {
+                    errors += "HelpLink: " + er.Exception.HelpLink + Environment.NewLine;
+                }
+                if (!string.IsNullOrEmpty(er.Exception.TargetSite.ToString()))
+                {
+                    errors += "TargetSite: " + er.Exception.TargetSite + Environment.NewLine;
+                }
+                if (!string.IsNullOrEmpty(er.Exception.Data.ToString()))
+                {
+                    errors += "Exception Data: " + er.Exception.Data + Environment.NewLine;
+                }
+                if (!string.IsNullOrEmpty(er.ScriptStackTrace))
+                {
+                    errors += "ScriptStackTrace: " + er.ScriptStackTrace + Environment.NewLine;
+                }
+                errors += "--------------";
+            }
+            catch (Exception ex)
+            {
+                errors += "Error on collecting PowerShell exception messages: " + ex.Message;
+            }
+
+            var message = "Executed and returned the following errors:" +
+                          Config.SeparatorLine + errors;
+            return message;
         }
 
         private string ProcessResult(Collection<PSObject> psObjects)

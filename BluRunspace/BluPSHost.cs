@@ -24,6 +24,10 @@ namespace BluRunspace
 
         private void UiOnDataReady(object sender, string message)
         {
+            if (message == null)
+            {
+                return;
+            }
             DataReady?.Invoke(sender, message);
         }
 
