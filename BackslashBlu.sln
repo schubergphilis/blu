@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26127.3
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BluApi", "BluApi\BluApi.csproj", "{AC5D1C78-F277-45FE-BB4D-F2F47F622B54}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BluIpc", "BluIpc\BluIpc.csproj", "{70C8D977-3121-426C-A1A7-93BCACC40B20}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BluRunspace", "BluRunspace\BluRunspace.csproj", "{4C9A4602-505A-4755-B3E9-AA73A2CD3979}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BluSnapin", "BluSnapin\BluSnapin.csproj", "{1BBE685A-3910-4D4B-8C22-A9D0E07646F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{4C9A4602-505A-4755-B3E9-AA73A2CD3979}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C9A4602-505A-4755-B3E9-AA73A2CD3979}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C9A4602-505A-4755-B3E9-AA73A2CD3979}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BBE685A-3910-4D4B-8C22-A9D0E07646F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BBE685A-3910-4D4B-8C22-A9D0E07646F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BBE685A-3910-4D4B-8C22-A9D0E07646F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BBE685A-3910-4D4B-8C22-A9D0E07646F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
