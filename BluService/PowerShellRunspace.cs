@@ -88,27 +88,35 @@ namespace BluService
 
         public async Task<string> ExecuteScript(string scriptFile)
         {
-            _runningScript = true;
-            if (_runspaceConsole.HasExited)
+            try
             {
-                return "Exit1:runspace has exited, dispose and recreate";
-            }
-            _runspaceConsole.StandardInput.WriteLine(scriptFile);
-            if (await Task.Run(() => !_eventWaitHandle.WaitOne(TimeSpan.FromHours(4))))
-            {
-                return "Exit1:runspace timeout";
-            }
+                _runningScript = true;
+                if (HasExited())
+                {
+                    return "Exit1:runspace has exited, dispose and recreate";
+                }
+                _runspaceConsole.StandardInput.WriteLine(scriptFile);
+                if (await Task.Run(() => !_eventWaitHandle.WaitOne(TimeSpan.FromHours(4))))
+                {
+                    return "Exit1:runspace timeout";
+                }
 
-            if (_runspaceConsole.HasExited && _runspaceConsole.ExitCode != 0)
-            {
-                return "Exit1:Error during script execution";
-            }
-            while (_runningScript)
-            {
-                Thread.Sleep(50);
-            }
+                if (HasExited() && _runspaceConsole.ExitCode != 0)
+                {
+                    return "Exit1:Error during script execution";
+                }
+                while (_runningScript)
+                {
+                    Thread.Sleep(50);
+                }
 
-            return "Exit0:";
+                return "Exit0:";
+            }
+            catch (Exception)
+            {
+                Dispose();
+                throw;
+            }
         }
 
         public void Dispose()
